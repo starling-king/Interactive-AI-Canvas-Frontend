@@ -1,1 +1,1 @@
-# portfolio-website-frontend
+# Interactive AI Canvas frontend
