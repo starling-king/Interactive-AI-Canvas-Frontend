@@ -1,4 +1,3 @@
-import React from "react";
 import { Footer, Header, ServerWakeupBanner } from "./components/index.js";
 import { Outlet } from "react-router-dom";
 

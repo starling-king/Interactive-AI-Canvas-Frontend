@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useState, useEffect } from "react";
 import siteContentServices from "../Services/site_content.Services.js";
 import { Editor } from "@tinymce/tinymce-react";
 import conf from "../config/config.js";
+import { useAuthStore } from "../store/authStore.js";
 
 function ContentManager() {
-  const currentUser = useSelector((state) => state.AuthReducer.data);
+  const currentUser = useAuthStore((state) => state.user);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

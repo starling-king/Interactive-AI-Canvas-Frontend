@@ -1,4 +1,3 @@
-import React from 'react';
 import { BaseEdge, getStraightPath } from '@xyflow/react';
 
 export default function StraightEdge({

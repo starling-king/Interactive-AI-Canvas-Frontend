@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import projectServices from "../Services/projects.Services.js";
 import siteContentServices from "../Services/site_content.Services.js";

@@ -1,11 +1,10 @@
-import React from "react";
-import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import PublicHeader from "./PublicHeader";
 import AdminHeader from "./AdminHeader";
+import { useAuthStore } from "../../store/authStore.js";
 
 export default function Header() {
-  const authStatus = useSelector((state) => state.AuthReducer?.status || false);
+  const authStatus = useAuthStore((state) => state.isAuthenticated);
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
 

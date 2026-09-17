@@ -1,14 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { setAdminProjects } from "../store/ProjectSlice";
 import projectServices from "../Services/projects.Services";
+import { useProjectStore } from "../store/projectStore.js";
 
 function AdminProjectList() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  const projects = useSelector((state) => state.ProjectReducer.adminProjects);
+  const { adminProjects: projects, setAdminProjects } = useProjectStore();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -25,7 +22,7 @@ function AdminProjectList() {
         const response = await projectServices.getAllAdminProjects({});
 
         if (response?.data) {
-          dispatch(setAdminProjects(response.data));
+          setAdminProjects(response.data);
         }
       } catch (err) {
         setError("Failed to load projects. Please check your connection.");
@@ -35,7 +32,7 @@ function AdminProjectList() {
     };
 
     fetchAdminProjects();
-  }, [dispatch, projects.length]);
+  }, [setAdminProjects, projects.length]);
 
   const handleDelete = async (projectId) => {
     const confirmDelete = window.confirm(
@@ -49,7 +46,7 @@ function AdminProjectList() {
       const updatedProjects = projects.filter(
         (project) => project._id !== projectId,
       );
-      dispatch(setAdminProjects(updatedProjects));
+      setAdminProjects(updatedProjects);
     } catch (err) {
       alert("Failed to delete project.");
     }
@@ -66,7 +63,7 @@ function AdminProjectList() {
           ? { ...project, [field]: !currentValue }
           : project,
       );
-      dispatch(setAdminProjects(updatedProjects));
+      setAdminProjects(updatedProjects);
     } catch (err) {
       alert(`Failed to update ${field} status.`);
     }

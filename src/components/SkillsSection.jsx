@@ -1,4 +1,3 @@
-import React from "react";
 
 function SkillsSection({ skillsArray }) {
   if (!skillsArray || skillsArray.length === 0) {

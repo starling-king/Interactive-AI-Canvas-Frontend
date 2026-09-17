@@ -1,18 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { setAllProjects } from "../store/ProjectSlice";
 import projectServices from "../Services/projects.Services";
 import { ProjectCard } from "../components/index.js";
+import { useProjectStore } from "../store/projectStore.js";
 
 function Projects() {
   const { username } = useParams();
   const targetUser = username || "ayush";
-  const dispatch = useDispatch();
-
-  const storedProjects = useSelector(
-    (state) => state.ProjectReducer.allProjects,
-  );
+  const { allProjects: storedProjects, setAllProjects } = useProjectStore();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -33,7 +28,7 @@ function Projects() {
         });
 
         if (response?.data) {
-          dispatch(setAllProjects(response.data));
+          setAllProjects(response.data);
         }
       } catch (err) {
         console.error("Failed to fetch projects", err);
@@ -44,7 +39,7 @@ function Projects() {
     };
 
     fetchAllProjects();
-  }, [targetUser, dispatch, storedProjects.length]);
+  }, [targetUser, setAllProjects, storedProjects.length]);
 
   if (loading)
     return (

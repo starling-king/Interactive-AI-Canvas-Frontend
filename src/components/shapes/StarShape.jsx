@@ -1,4 +1,3 @@
-import React from 'react';
 
 export default function StarShape({ className = "w-full h-full text-slate-800" }) {
     return (

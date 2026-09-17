@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { setActiveProject } from "../store/ProjectSlice";
 import projectServices from "../Services/projects.Services";
+import { useProjectStore } from "../store/projectStore.js";
 
 function ProjectDetail() {
   const { username, slug } = useParams();
   const targetUser = username || "ayush";
-  const dispatch = useDispatch();
-
-  const allProjects = useSelector((state) => state.ProjectReducer.allProjects);
+  const { allProjects, setActiveProject } = useProjectStore();
 
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,7 +20,7 @@ function ProjectDetail() {
 
       if (cachedProject) {
         setProject(cachedProject);
-        dispatch(setActiveProject(cachedProject._id));
+        setActiveProject(cachedProject._id);
         setLoading(false);
       } else {
         try {
@@ -33,7 +30,7 @@ function ProjectDetail() {
           });
           if (response?.data) {
             setProject(response.data);
-            dispatch(setActiveProject(response.data._id));
+            setActiveProject(response.data._id);
           }
         } catch (error) {
           console.error("Error fetching project details", error);
@@ -44,7 +41,7 @@ function ProjectDetail() {
     };
 
     loadProjectData();
-  }, [slug, targetUser, allProjects, dispatch]);
+  }, [slug, targetUser, allProjects, setActiveProject]);
 
   useEffect(() => {
     if (!project?.image || project.image.length <= 1) return;

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useState, useEffect } from "react";
 import resumeBuilderSurvice from "../Services/resume.services.js";
 import { ResumePreview } from "../components/index.js";
+import { useAuthStore } from "../store/authStore.js";
 
 function AdminResumePage() {
-  const currentUser = useSelector((state) => state.AuthReducer?.data);
+  const currentUser = useAuthStore((state) => state.user);
 
   const [title, setTitle] = useState("Full Stack Engineer");
   const [targetKeywords, setTargetKeywords] = useState(

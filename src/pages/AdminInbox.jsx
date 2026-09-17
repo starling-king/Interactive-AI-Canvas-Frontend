@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import contactMessageService from "../Services/contact_messages.Services";
 
 function AdminInbox() {

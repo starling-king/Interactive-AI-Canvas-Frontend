@@ -1,24 +1,25 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import adminServices from "../../Services/admin_users.Services.js";
-import { logout } from "../../store/AuthSlice.js";
-import { clearProjects } from "../../store/ProjectSlice.js";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../store/authStore.js";
+import { useProjectStore } from "../../store/projectStore.js";
+import { useAuthActions } from "../../hooks/useAuthActions.js";
 
 function LogoutBtn() {
-  const dispatch = useDispatch();
+  const clearAuthData = useAuthStore((state) => state.clearAuthData);
+  const clearProjects = useProjectStore((state) => state.clearProjects);
+  const { logoutUser } = useAuthActions();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const navigate = useNavigate();
 
   const logoutHandler = async () => {
     setIsLoggingOut(true);
     try {
-      await adminServices.logoutUser();
-    } catch (error) {
+      await logoutUser();
+    } catch {
       console.log("Backend session already cleared or unavailable.");
     } finally {
-      dispatch(clearProjects());
-      dispatch(logout());
+      clearProjects();
+      clearAuthData();
       navigate("/login", { replace: true });
     }
   };

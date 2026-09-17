@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 // 1. Swapped Redux for Zustand Hooks
 import { useAuthActions } from "../hooks/useAuthActions.js";
@@ -25,7 +25,7 @@ function Login() {
     if (isInitializing) {
       checkAuthSession();
     }
-  }, [isAuthenticated, isInitializing, navigate, checkAuthSession]);
+  }, [isAuthenticated, isInitializing, navigate]);
 
   // 4. The Submission Handler
   const loginHandler = async (e) => {
@@ -33,7 +33,7 @@ function Login() {
     clearError();
 
     // Map your UI 'name' to the 'username' parameter in loginUser
-    const success = await loginUser(null, name, password);
+    const success = await loginUser(undefined, name, password);
 
     if (success) {
       navigate("/workspace", { replace: true });

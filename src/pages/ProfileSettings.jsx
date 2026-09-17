@@ -1,14 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useState, useEffect } from "react";
 import adminServices from "../Services/admin_users.Services.js";
 import siteContentServices from "../Services/site_content.Services.js";
-import { login } from "../store/AuthSlice.js";
+import { useAuthStore } from "../store/authStore.js";
 
 function ProfileSettings() {
-  const dispatch = useDispatch();
-
-  const authData = useSelector((state) => state.AuthReducer.data);
-  const currentUser = authData?.user || authData;
+  const { user: currentUser, setAuthData } = useAuthStore();
 
   const [adminForm, setAdminForm] = useState({
     username: currentUser?.username || "",
@@ -101,11 +97,7 @@ function ProfileSettings() {
       });
 
       if (response?.data) {
-        dispatch(
-          login({
-            data: { user: response.data, accessToken: authData.accessToken },
-          }),
-        );
+        setAuthData(response.data);
         setAdminStatus({
           loading: false,
           error: "",

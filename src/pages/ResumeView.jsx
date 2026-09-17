@@ -1,12 +1,12 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-// import { useSelector } from "react-redux";
 import resumeBuilderSurvice from "../Services/resume.services.js";
 import { ResumePreview } from "../components/index.js";
+import { useAuthStore } from "../store/authStore.js";
 
 function ResumeView() {
   const { username: paramUsername } = useParams();
-  const currentUser = useSelector((state) => state.AuthReducer?.data);
+  const currentUser = useAuthStore((state) => state.user);
 
   const username =
     paramUsername ||

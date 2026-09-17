@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAiActions } from '../hooks/useAiActions.js';
 import { useAiStore } from '../store/aiStore.js';

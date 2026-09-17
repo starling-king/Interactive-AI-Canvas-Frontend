@@ -1,4 +1,3 @@
-import React from 'react';
 
 export default function DocumentShape({ className = "w-full h-full text-slate-800" }) {
     return (

@@ -1,14 +1,13 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuthStore } from "../store/authStore.js";
+import { useProjectStore } from "../store/projectStore.js";
 
 function Admin() {
-  const authData = useSelector((state) => state.AuthReducer.data);
-  const adminProjects = useSelector(
-    (state) => state.ProjectReducer.adminProjects,
-  );
+  const currentUser = useAuthStore((state) => state.user);
+  const adminProjects = useProjectStore((state) => state.adminProjects);
 
-  const username = authData?.user?.username || "ayush";
+  const username = currentUser?.username || "ayush";
 
   const totalProjects = adminProjects.length;
   const featuredProjects = adminProjects.filter(

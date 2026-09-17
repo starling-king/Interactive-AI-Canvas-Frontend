@@ -1,18 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
 import projectServices from "../Services/projects.Services";
 import projectImagesServices from "../Services/project_images.Services";
-import { setAdminProjects } from "../store/ProjectSlice.js";
+import { useProjectStore } from "../store/projectStore.js";
 
 function ProjectEditorForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = Boolean(id);
 
-  const adminProjects = useSelector(
-    (state) => state.ProjectReducer.adminProjects,
-  );
+  const { adminProjects, setAdminProjects } = useProjectStore();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -38,8 +35,6 @@ function ProjectEditorForm() {
   const [error, setError] = useState("");
   const [toast, setToast] = useState({ type: "", message: "", visible: false });
   const [deletePrompt, setDeletePrompt] = useState(null);
-
-  const dispatch = useDispatch();
 
   const showToast = (type, message) => {
     setToast({ type, message, visible: true });
@@ -110,7 +105,7 @@ function ProjectEditorForm() {
         await projectServices.updateProject({ id, ...payload });
 
         const freshData = await projectServices.getAllAdminProjects({});
-        if (freshData?.data) dispatch(setAdminProjects(freshData.data));
+        if (freshData?.data) setAdminProjects(freshData.data);
 
         showToast("success", "Project configuration saved successfully.");
         setTimeout(() => navigate("/admin/projects"), 1000);
@@ -118,7 +113,7 @@ function ProjectEditorForm() {
         const response = await projectServices.createProject(payload);
 
         const freshData = await projectServices.getAllAdminProjects({});
-        if (freshData?.data) dispatch(setAdminProjects(freshData.data));
+        if (freshData?.data) setAdminProjects(freshData.data);
 
         const newProjectId = response?.data?._id;
         if (newProjectId) {

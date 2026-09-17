@@ -1,4 +1,3 @@
-import React from 'react';
 import { BaseEdge, getSmoothStepPath, EdgeLabelRenderer } from '@xyflow/react';
 
 export default function OrthogonalEdge({
