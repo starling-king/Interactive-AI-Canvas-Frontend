@@ -35,11 +35,21 @@ export default function ShapeNode({ data, selected, isConnectable }) {
     // Retrieve the SVG if it exists in the registry
     const SvgComponent = ShapeRegistry[shapeType];
 
+    const isContainer = data.width && data.height;
+
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+
+            style={{
+                width: isContainer ? `${data.width}px` : 'auto',
+                height: isContainer ? `${data.height}px` : 'auto',
+                zIndex: isContainer ? -1 : 1,
+                pointerEvents: isContainer ? 'none' : 'auto' // Prevents container from stealing clicks from inner nodes
+            }}
+
             className={`relative group flex items-center justify-center min-w-[120px] min-h-[80px] p-4 cursor-pointer ${
                 selected ? 'drop-shadow-[0_0_10px_rgba(59,130,246,0.8)]' : 'drop-shadow-lg'
             } ${isPill ? 'bg-slate-800 rounded-full border-2 border-slate-600' : ''} ${
