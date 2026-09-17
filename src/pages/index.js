@@ -13,6 +13,7 @@ import ProjectEditorForm from "./ProjectEditorForm.jsx";
 import Projects from "./Projects.jsx";
 import ResumeView from "./ResumeView.jsx";
 import Signin from "./Signin.jsx";
+import CanvasWorkspace from "./CanvasWorkspace.jsx";
 
 export {
   Admin,
@@ -48,4 +49,5 @@ export default {
   Projects,
   ResumeView,
   Signin,
+  CanvasWorkspace,
 };

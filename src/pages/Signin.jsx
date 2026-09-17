@@ -1,70 +1,52 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import adminServices from "../Services/admin_users.Services.js";
-import { Container, Button } from "../components/index.js";
-import { useDispatch, useSelector } from "react-redux";
-import { login } from "../store/AuthSlice.js";
+// 1. Swapped Redux for Zustand Hooks
+import { useAuthActions } from "../hooks/useAuthActions.js";
+import { useAuthStore } from "../store/authStore.js";
 
 function Signin() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
-
-  const dispatch = useDispatch();
-  const authStatus = useSelector((state) => state.AuthReducer.status);
-
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Custom success state for your UI checkmark screen
+  const [success, setSuccess] = useState(false); 
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (authStatus) {
-      navigate("/admin/dashboard", { replace: true });
-    } else {
-      adminServices
-        .getCurrentUser()
-        .then((userData) => {
-          if (userData) {
-            const pureUser = userData?.data?.user || userData?.data || userData;
-            dispatch(login(pureUser));
-            navigate("/admin/dashboard", { replace: true });
-          } else {
-            setIsCheckingSession(false);
-          }
-        })
-        .catch(() => {
-          setIsCheckingSession(false);
-        });
-    }
-  }, [authStatus, navigate, dispatch]);
+  // 2. Connect to the Zustand Brain
+  const { isAuthenticated, isInitializing } = useAuthStore();
+  const { registerUser, checkAuthSession, isLoading, error, clearError } = useAuthActions();
 
+  // 3. Auto-Routing: If they are already logged in, push them straight to the Workspace
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/workspace", { replace: true });
+      return;
+    }
+
+    if (isInitializing) {
+      checkAuthSession();
+    }
+  }, [isAuthenticated, isInitializing, navigate, checkAuthSession]);
+
+  // 4. The Registration Handler
   const registerHandler = async (e) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
+    clearError();
 
-    try {
-      const response = await adminServices.registerUser({
-        name,
-        password,
-        email,
-      });
+    // Pass the name (username), email, and password to the decoupled action
+    const isSuccess = await registerUser(name, email, password);
 
-      if (response && response.data) {
-        setSuccess(true);
-      }
-    } catch (error) {
-      setError(error.message || "Registration failed. Please try again.");
-    } finally {
-      setLoading(false);
+    // If registration succeeds, trigger your custom success UI
+    if (isSuccess) {
+      setSuccess(true);
     }
   };
 
-  if (isCheckingSession) {
+  // 5. Preserved Loading Screen
+  if (isInitializing) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[85vh] bg-transparent text-primary-600 dark:text-primary-400 font-black tracking-widest uppercase text-[10px] sm:text-xs transition-colors duration-500">
         <div className="relative flex items-center justify-center w-12 h-12 mb-6">
@@ -95,6 +77,7 @@ function Signin() {
     );
   }
 
+  // 6. Preserved Success Screen (Identity Verified)
   if (success) {
     return (
       <section className="relative flex items-center justify-center min-h-[85vh] px-4 py-16 sm:py-24 overflow-hidden transition-colors duration-300">
@@ -128,7 +111,7 @@ function Signin() {
             </p>
 
             <button
-              onClick={() => navigate("/login", { replace: true })}
+              onClick={() => navigate("/workspace", { replace: true })}
               className="w-full flex justify-center items-center py-4 px-4 rounded-2xl shadow-lg hover:shadow-[0_0_30px_var(--theme-primary-glow)] hover:-translate-y-0.5 text-[14px] font-black tracking-widest uppercase text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300 gpu-layer group/btn"
             >
               <span>Enter Command Center</span>
@@ -141,7 +124,7 @@ function Signin() {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth="2.5"
+                  strokeWidth={2.5}
                   d="M14 5l7 7m0 0l-7 7m7-7H3"
                 />
               </svg>
@@ -152,6 +135,7 @@ function Signin() {
     );
   }
 
+  // 7. Preserved Main Registration UI
   return (
     <section className="relative flex items-center justify-center min-h-[85vh] px-4 py-16 sm:py-24 overflow-hidden transition-colors duration-300">
       <div className="absolute inset-0 z-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMTQ4LCAxNjMsIDE4NCwgMC4xNSkiLz48L3N2Zz4=')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wNSkiLz48L3N2Zz4=')] mask-[radial-gradient(ellipse_80%_80%_at_50%_50%,#000_20%,transparent_100%)] pointer-events-none" />
@@ -299,10 +283,10 @@ function Signin() {
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={loading}
+                disabled={isLoading}
                 className="w-full flex justify-center items-center py-4 px-4 rounded-2xl shadow-lg hover:shadow-[0_0_30px_var(--theme-primary-glow)] hover:-translate-y-0.5 text-[14px] font-black tracking-widest uppercase text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transform-gpu transition-all duration-300 group/btn"
               >
-                {loading ? (
+                {isLoading ? (
                   <>
                     <svg
                       className="w-5 h-5 mr-3 -ml-1 text-white animate-spin"
@@ -324,11 +308,11 @@ function Signin() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    Generating Key...
+                    Authenticating...
                   </>
                 ) : (
                   <>
-                    <span>Generate Master Key</span>
+                    <span>Initialize Uplink</span>
                     <svg
                       className="w-4 h-4 ml-2 transition-transform duration-300 group-hover/btn:translate-x-1"
                       fill="none"
