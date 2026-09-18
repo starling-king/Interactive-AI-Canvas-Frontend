@@ -2,9 +2,11 @@
 
 /* 
   =========================================
-  SINGLE SOURCE OF TRUTH: THEME ARSENAL
+  SINGLE SOURCE OF TRUTH: NATIVE VARIABLES
   Strict 60/30/10 Dark Moonlight Theme
   =========================================
+  By putting these in :root, we guarantee they are available 
+  to the browser instantly, bypassing any Tailwind compile lag.
 */
 :root {
   /* Typography */
@@ -32,10 +34,35 @@
   /* Slate Blue */
 
   /* 
-    10% ACCENT: Electric Blue (Interactions & Signals)
+    10% ACCENT: Electric Blue (Interactions & Glows)
   */
   --color-electric: #3b82f6;
   --color-electric-glow: rgba(59, 130, 246, 0.5);
+}
+
+/* 
+  =========================================
+  TAILWIND V4 THEME ENGINE
+  =========================================
+*/
+@theme {
+  /* 
+    CRITICAL V4 ARCHITECTURE:
+    We map our native CSS variables to Tailwind's internal engine.
+    This tells Tailwind to generate utility classes like:
+    bg-moon-950, text-electric, border-deep-900, font-display
+  */
+  --color-moon-950: var(--color-moon-950);
+  --color-moon-900: var(--color-moon-900);
+  --color-moon-800: var(--color-moon-800);
+
+  --color-deep-900: var(--color-deep-900);
+  --color-deep-800: var(--color-deep-800);
+
+  --color-electric: var(--color-electric);
+
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
 }
 
 /* 
@@ -46,14 +73,14 @@
 @layer base {
 
   /* 
-    CRITICAL FIX: We bypass Tailwind's @apply here and use raw CSS variables 
-    to guarantee the background renders immediately, bypassing any Vite/v4 compilation bugs.
+    Force the browser to paint the background instantly using raw CSS.
+    This guarantees no "white flash" on page load.
   */
   html,
   body {
     background-color: var(--color-moon-950);
     color: #f8fafc;
-    /* Crisp white text */
+    /* Slate 50 (Crisp white text) */
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     min-height: 100vh;
@@ -86,7 +113,8 @@
 
   /* 
     The 30% Secondary Glassmorphism
-    Hardcoded with native CSS to guarantee the backdrop-blur works independently of Tailwind plugins.
+    Hardcoded with native CSS `color-mix()` to guarantee the backdrop-blur 
+    works independently of Tailwind alpha compiler quirks.
   */
   .glass-panel {
     background-color: color-mix(in srgb, var(--color-deep-900) 40%, transparent);
