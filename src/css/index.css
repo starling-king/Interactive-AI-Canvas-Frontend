@@ -1,91 +1,94 @@
 @import "tailwindcss";
-@plugin "@tailwindcss/typography";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
+/* 
+  SINGLE SOURCE OF TRUTH: Typography & Colors 
+  Following the 60/30/10 Dark Moonlight Theme 
+*/
 @theme {
-  --font-sans:
-    "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  /* Typography: Space Grotesk for Headings, Inter for Body */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
 
-  --color-primary-50: var(--theme-primary-50);
-  --color-primary-100: var(--theme-primary-100);
-  --color-primary-200: var(--theme-primary-200);
-  --color-primary-300: var(--theme-primary-300);
-  --color-primary-400: var(--theme-primary-400);
-  --color-primary-500: var(--theme-primary-500);
-  --color-primary-600: var(--theme-primary-600);
-  --color-primary-700: var(--theme-primary-700);
-  --color-primary-800: var(--theme-primary-800);
-  --color-primary-900: var(--theme-primary-900);
+  /* 60% Dominant: Charcoal Grey (The Void) */
+  --color-moon-950: #020617;
+  /* Slate 950 */
+  --color-moon-900: #0f172a;
+  /* Slate 900 */
+  --color-moon-800: #1e293b;
+  /* Slate 800 */
+
+  /* 30% Secondary: Deep Blue (Floating Panels & Glass) */
+  --color-deep-900: #172554;
+  /* Blue 950 */
+  --color-deep-800: #1e3a8a;
+  /* Blue 900 */
+
+  /* 10% Accent: Electric Blue (Interactions & Glows) */
+  --color-electric: #3b82f6;
+  /* Blue 500 */
+  --color-electric-glow: rgba(59, 130, 246, 0.5);
 }
 
 @layer base {
-  :root {
-    --theme-primary-50: #eef2ff;
-    --theme-primary-100: #e0e7ff;
-    --theme-primary-200: #c7d2fe;
-    --theme-primary-300: #a5b4fc;
-    --theme-primary-400: #818cf8;
-    --theme-primary-500: #6366f1;
-    --theme-primary-600: #4f46e5;
-    --theme-primary-700: #4338ca;
-    --theme-primary-800: #3730a3;
-    --theme-primary-900: #312e81;
-  }
 
-  .dark {
-    --theme-primary-50: #ecfdf5;
-    --theme-primary-100: #d1fae5;
-    --theme-primary-200: #a7f3d0;
-    --theme-primary-300: #6ee7b7;
-    --theme-primary-400: #34d399;
-    --theme-primary-500: #10b981;
-    --theme-primary-600: #059669;
-    --theme-primary-700: #047857;
-    --theme-primary-800: #065f46;
-    --theme-primary-900: #064e3b;
-  }
-
-  *,
-  ::after,
-  ::before {
-    @apply border-slate-200 dark:border-slate-800/50;
-  }
-
+  /* Enforce Default Dark Mode & Base Typography */
   html {
-    scroll-behavior: smooth;
-    -webkit-tap-highlight-color: transparent;
+    background-color: var(--color-moon-950);
+    color: #f8fafc;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 dark:bg-[#040405] dark:text-slate-50 font-sans antialiased selection:bg-primary-500/30 selection:text-primary-900 dark:selection:text-primary-50 transition-colors duration-300 ease-in-out min-h-screen flex flex-col;
+    @apply bg-moon-950 min-h-screen selection:bg-electric selection:text-white;
   }
 }
 
 @layer utilities {
-  .gpu-layer {
-    transform: translateZ(0);
-    will-change: transform, opacity;
+
+  /* 
+    Glassmorphism Utility
+    Usage: className="glass-panel" 
+  */
+  .glass-panel {
+    @apply bg-deep-900/40 backdrop-blur-md border border-moon-800/50 shadow-xl;
   }
 
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-slate-300/70 rounded-full dark:bg-slate-800 hover:bg-slate-400 dark:hover:bg-slate-700 transition-colors;
+  /* 
+    Abstract Gradient Background to prevent emptiness 
+    Usage: className="bg-abstract-glow"
+  */
+  .bg-abstract-glow {
+    background-image:
+      radial-gradient(circle at 15% 50%, rgba(30, 58, 138, 0.15), transparent 25%),
+      radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08), transparent 25%);
   }
 
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
+  /* 
+    Electric Glow for Interactive Elements
+    Usage: className="hover:electric-shadow"
+  */
+  .electric-shadow {
+    box-shadow: 0 0 20px var(--color-electric-glow);
   }
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+}
+
+/* Hide scrollbars for cleaner UI but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
