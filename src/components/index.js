@@ -94,7 +94,7 @@ import Container from "./container/Container.jsx";
 import Header from "./Header/Header.jsx";
 import AdminHeader from "./Header/AdminHeader.jsx";
 import PublicHeader from "./Header/PublicHeader.jsx";
-import LogoutBtn from "./Header/LogoutBtn.jsx";
+// import LogoutBtn from "./Header/LogoutBtn.jsx";
 import Footer from "./footer/Footer.jsx";
 
 // --- 4. Master Canvas Nodes (DO NOT TOUCH) ---
@@ -138,7 +138,7 @@ export {
   Header,
   AdminHeader,
   PublicHeader,
-  LogoutBtn,
+  // LogoutBtn,
   Footer,
   ShapeNode,
   TableNode,
