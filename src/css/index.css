@@ -1,42 +1,63 @@
 @import "tailwindcss";
 
 /* 
-  SINGLE SOURCE OF TRUTH: Typography & Colors 
-  Following the 60/30/10 Dark Moonlight Theme 
+  =========================================
+  SINGLE SOURCE OF TRUTH: THEME ARSENAL
+  Strict 60/30/10 Dark Moonlight Theme
+  =========================================
 */
-@theme {
-  /* Typography: Space Grotesk for Headings, Inter for Body */
+:root {
+  /* Typography */
   --font-sans: "Inter", system-ui, sans-serif;
   --font-display: "Space Grotesk", system-ui, sans-serif;
 
-  /* 60% Dominant: Charcoal Grey (The Void) */
-  --color-moon-950: #020617;
-  /* Slate 950 */
-  --color-moon-900: #0f172a;
-  /* Slate 900 */
-  --color-moon-800: #1e293b;
-  /* Slate 800 */
+  /* 
+    60% DOMINANT: True Charcoal Grey (The Void)
+    Absolutely NO blue tint. Pure neutral darks.
+  */
+  --color-moon-950: #0a0a0a;
+  /* True Charcoal Black */
+  --color-moon-900: #171717;
+  /* Deep Charcoal */
+  --color-moon-800: #262626;
+  /* Lighter Charcoal for subtle borders */
 
-  /* 30% Secondary: Deep Blue (Floating Panels & Glass) */
-  --color-deep-900: #172554;
-  /* Blue 950 */
-  --color-deep-800: #1e3a8a;
-  /* Blue 900 */
+  /* 
+    30% SECONDARY: Deep Blue (Glass & Floating Panels)
+    Isolated completely from the background.
+  */
+  --color-deep-900: #081229;
+  /* Ink Blue */
+  --color-deep-800: #0f172a;
+  /* Slate Blue */
 
-  /* 10% Accent: Electric Blue (Interactions & Glows) */
+  /* 
+    10% ACCENT: Electric Blue (Interactions & Signals)
+  */
   --color-electric: #3b82f6;
-  /* Blue 500 */
   --color-electric-glow: rgba(59, 130, 246, 0.5);
 }
 
+/* 
+  =========================================
+  BASE LAYER: Hardware-Level Overrides
+  =========================================
+*/
 @layer base {
 
-  /* Enforce Default Dark Mode & Base Typography */
-  html {
+  /* 
+    CRITICAL FIX: We bypass Tailwind's @apply here and use raw CSS variables 
+    to guarantee the background renders immediately, bypassing any Vite/v4 compilation bugs.
+  */
+  html,
+  body {
     background-color: var(--color-moon-950);
     color: #f8fafc;
+    /* Crisp white text */
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    margin: 0;
   }
 
   h1,
@@ -49,41 +70,50 @@
     letter-spacing: -0.02em;
   }
 
-  body {
-    @apply bg-moon-950 min-h-screen selection:bg-electric selection:text-white;
+  /* Global Highlight Color */
+  ::selection {
+    background-color: var(--color-electric);
+    color: white;
   }
 }
 
+/* 
+  =========================================
+  UTILITIES LAYER: Reusable UI Arsenals
+  =========================================
+*/
 @layer utilities {
 
   /* 
-    Glassmorphism Utility
-    Usage: className="glass-panel" 
+    The 30% Secondary Glassmorphism
+    Hardcoded with native CSS to guarantee the backdrop-blur works independently of Tailwind plugins.
   */
   .glass-panel {
-    @apply bg-deep-900/40 backdrop-blur-md border border-moon-800/50 shadow-xl;
+    background-color: color-mix(in srgb, var(--color-deep-900) 40%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid color-mix(in srgb, var(--color-moon-800) 50%, transparent);
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
   }
 
-  /* 
-    Abstract Gradient Background to prevent emptiness 
-    Usage: className="bg-abstract-glow"
-  */
+  /* Abstract Background Mesh */
   .bg-abstract-glow {
     background-image:
-      radial-gradient(circle at 15% 50%, rgba(30, 58, 138, 0.15), transparent 25%),
+      radial-gradient(circle at 15% 50%, rgba(15, 23, 42, 0.4), transparent 25%),
       radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08), transparent 25%);
   }
 
-  /* 
-    Electric Glow for Interactive Elements
-    Usage: className="hover:electric-shadow"
-  */
+  /* 10% Accent Hardware Glow */
   .electric-shadow {
     box-shadow: 0 0 20px var(--color-electric-glow);
   }
 }
 
-/* Hide scrollbars for cleaner UI but keep functionality */
+/* 
+  =========================================
+  SYSTEM OVERRIDES
+  =========================================
+*/
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
