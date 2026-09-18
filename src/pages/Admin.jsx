@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuthStore } from "../store/authStore.js";
-import { useProjectStore } from "../store/projectStore.js";
+// import { useAuthStore } from "../store/authStore.js";
+// import { useProjectStore } from "../store/projectStore.js";
 
 function Admin() {
   const currentUser = useAuthStore((state) => state.user);
