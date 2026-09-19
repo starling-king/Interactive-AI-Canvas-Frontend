@@ -12,6 +12,7 @@ export default function AiPromptModal({ isOpen, onClose, workspaceId }) {
 
     const handleGenerate = async (e) => {
         e.preventDefault();
+        
         if (!prompt.trim() || isProcessing) return;
 
         clearError();

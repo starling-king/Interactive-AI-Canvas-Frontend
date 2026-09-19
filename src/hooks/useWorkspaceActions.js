@@ -57,20 +57,20 @@ export const useWorkspaceActions = () => {
         }
     };
 
-    // Creates a new workspace
     const createWorkspace = async (workspaceData) => {
         setIsLoading(true);
         setError(null);
         try {
             const response = await workspaceServices.createWorkspace(workspaceData);
-            if (response?.data) {
-                addWorkspace(response.data); // Optimistic UI update
-                return true;
+            const newWorkspace = response?.data?.data || response?.data;
+            if (newWorkspace) {
+                addWorkspace(newWorkspace); 
+                return newWorkspace._id;
             }
-            return false;
+            return null;
         } catch (err) {
             setError(err.response?.data?.message || "Failed to create workspace.");
-            return false;
+            return null;
         } finally {
             setIsLoading(false);
         }
