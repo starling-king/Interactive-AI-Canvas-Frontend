@@ -1,4 +1,101 @@
-import { useState, useEffect } from 'react';
+// import React, { useEffect } from 'react';
+// import { useParams } from 'react-router-dom';
+// import {
+//     ReactFlow,
+//     ReactFlowProvider,
+//     Background,
+//     Controls,
+//     MiniMap,
+//     ConnectionMode,
+//     MarkerType
+// } from '@xyflow/react';
+// import '@xyflow/react/dist/style.css';
+
+// // 1. Zustand Brain & Actions
+// import { useCanvasStore } from '../store/canvasStore.js';
+// import { useCanvasActions } from '../hooks/useCanvasActions.js';
+
+// // 2. UI & Dictionaries (Imported cleanly from your Soul Index file)
+// import { SkeletonLoader, customNodeTypes, customEdgeTypes } from '../components/index.js';
+
+// export default function CanvasWorkspace() {
+//     // 3. Extract the ID from the URL (Deep Linking)
+//     const { workspaceId } = useParams();
+
+//     // 4. Get the network action
+//     const { fetchCanvas } = useCanvasActions();
+
+//     // 5. Connect to the Live State
+//     const { isFetching, nodes, edges, onNodesChange, onEdgesChange, onConnect } = useCanvasStore();
+
+//     // 6. Deep Hydration: Trigger download the second this page mounts
+//     useEffect(() => {
+//         if (workspaceId) {
+//             fetchCanvas(workspaceId);
+//         }
+//         // eslint-disable-next-line react-hooks/exhaustive-deps
+//     }, [workspaceId]);
+
+//     const defaultEdgeOptions = {
+//         type: 'edge_orthogonal',
+//         markerEnd: {
+//             type: MarkerType.ArrowClosed,
+//             width: 20,
+//             height: 20,
+//             color: '#3b82f6', // Electric Blue arrows for the dark theme
+//         },
+//     };
+
+//     // 7. The Loading Block: Show your Skeleton Loader while fetching from the DB
+//     if (isFetching) {
+//         return (
+//             <div className="w-screen h-screen bg-moon-950 flex items-center justify-center">
+//                 <SkeletonLoader type="canvas" />
+//             </div>
+//         );
+//     }
+
+//     // 8. The Kinetic Render: The data has arrived!
+//     return (
+//         <ReactFlowProvider>
+//             {/* The Void Background from your index.css SSOT */}
+//             <div className="w-screen h-screen bg-moon-950 font-sans">
+//                 <ReactFlow
+//                     nodes={nodes}
+//                     edges={edges}
+//                     onNodesChange={onNodesChange}
+//                     onEdgesChange={onEdgesChange}
+//                     onConnect={onConnect}
+//                     nodeTypes={customNodeTypes}
+//                     edgeTypes={customEdgeTypes}
+//                     defaultEdgeOptions={defaultEdgeOptions}
+//                     connectionMode={ConnectionMode.Loose}
+//                     fitView
+//                     minZoom={0.1}
+//                     maxZoom={2}
+//                     className="touch-none"
+//                 >
+//                     {/* The dark dotted background */}
+//                     <Background color="#262626" gap={24} size={2} /> {/* moon-800 */}
+
+//                     {/* Standard navigation controls */}
+//                     <Controls className="bg-moon-900 border-moon-800 fill-slate-200" />
+
+//                     <MiniMap
+//                         nodeColor="#262626"
+//                         maskColor="rgba(10, 10, 10, 0.8)"
+//                         className="bg-moon-950"
+//                     />
+
+//                     {/* STEP 3 PLACEMENT: We will layer the CanvasHeader and ActionToolbar here next! */}
+
+//                 </ReactFlow>
+//             </div>
+//         </ReactFlowProvider>
+//     );
+// }
+
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ReactFlow,
@@ -6,79 +103,82 @@ import {
     Background,
     Controls,
     MiniMap,
-    Panel,
     ConnectionMode,
-    MarkerType
+    MarkerType,
+    Panel
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-// 1. Data Layer
+// 1. Zustand Brain & Actions
 import { useCanvasStore } from '../store/canvasStore.js';
 import { useCanvasActions } from '../hooks/useCanvasActions.js';
 
-// 2. UI Arsenal & Master Dictionaries (SSOT)
+// 2. UI & Dictionaries (Imported cleanly from your Soul Index file)
 import {
-    ElectricButton,
-    GlassCard,
-    AiPromptModal,
+    SkeletonLoader,
     customNodeTypes,
-    customEdgeTypes
+    customEdgeTypes,
+    ActionToolbar,
+    AiPromptModal,
+    ElectricButton
 } from '../components/index.js';
 
 export default function CanvasWorkspace() {
-    // We pull the ID from the URL (e.g., /workspace/12345)
-    const { id: workspaceId } = useParams();
+    const { workspaceId } = useParams();
     const navigate = useNavigate();
 
-    // Zustand State
-    const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useCanvasStore();
+    const { fetchCanvas } = useCanvasActions();
+    const { isFetching, nodes, edges, onNodesChange, onEdgesChange, onConnect } = useCanvasStore();
 
-    // Actions
-    const { fetchCanvas, saveCanvas, isSaving } = useCanvasActions();
-
+    // Local state to control the AI Modal visibility
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Initial Load: Fetch the specific canvas from the backend
+    // Deep Hydration: Trigger download the second this page mounts
     useEffect(() => {
         if (workspaceId) {
             fetchCanvas(workspaceId);
         }
-    }, [workspaceId, fetchCanvas]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [workspaceId]);
 
-    // Save Handler
-    const handleSave = async () => {
-        if (workspaceId) {
-            await saveCanvas(workspaceId);
-            // Optional: You could trigger a toast notification here if you want
-        }
-    };
-
-    // Ensure our arrows match the 60/30/10 theme (Slate/Charcoal)
     const defaultEdgeOptions = {
         type: 'edge_orthogonal',
         markerEnd: {
             type: MarkerType.ArrowClosed,
             width: 20,
             height: 20,
-            color: '#475569', // slate-600 to match the charcoal vibe
+            color: '#3b82f6',
         },
     };
 
+    if (isFetching) {
+        return (
+            <div className="w-screen h-screen bg-moon-950 flex items-center justify-center">
+                <SkeletonLoader type="canvas" />
+            </div>
+        );
+    }
+
     return (
         <ReactFlowProvider>
-            {/* 1. THE VOID: Enforcing the true Charcoal Grey background */}
             <div className="w-screen h-screen bg-moon-950 font-sans relative overflow-hidden">
 
-                {/* 2. Abstract Ambient Light */}
-                <div className="absolute inset-0 bg-abstract-glow pointer-events-none z-0" />
+                {/* --- OUTSIDE REACT FLOW: Modals and Absolute Overlays --- */}
 
-                {/* 3. The AI Modal Overlay */}
+                {/* 1. The AI Prompt Modal */}
                 <AiPromptModal
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     workspaceId={workspaceId}
                 />
 
+                {/* 2. The Floating Action Toolbar */}
+                <ActionToolbar
+                    workspaceId={workspaceId}
+                    onOpenAiModal={() => setIsModalOpen(true)}
+                />
+
+                {/* --- INSIDE REACT FLOW: The Kinetic Stage --- */}
                 <ReactFlow
                     nodes={nodes}
                     edges={edges}
@@ -92,61 +192,19 @@ export default function CanvasWorkspace() {
                     fitView
                     minZoom={0.1}
                     maxZoom={2}
-                    proOptions={{ hideAttribution: true }} // Traps user in the app
-                    className="touch-none z-10"
+                    className="touch-none"
                 >
-                    {/* Dark dotted background mapping to Charcoal */}
-                    <Background color="#1e293b" gap={24} size={2} />
+                    <Background color="#262626" gap={24} size={2} />
+                    <Controls className="bg-moon-900 border-moon-800 fill-slate-200" />
+                    <MiniMap nodeColor="#262626" maskColor="rgba(10, 10, 10, 0.8)" className="bg-moon-950" />
 
-                    {/* Controls colored to match the Dark Moonlight theme */}
-                    <Controls className="bg-moon-900 border-moon-800 fill-slate-300" />
-
-                    <MiniMap
-                        nodeColor="#262626" // moon-800
-                        maskColor="rgba(10, 10, 10, 0.8)" // moon-950 with opacity
-                        className="bg-moon-900 border border-moon-800 rounded-xl"
-                    />
-
-                    {/* 4. THE FLOATING COMMAND BAR */}
-                    <Panel position="top-center" className="mt-6 w-full max-w-2xl px-4 pointer-events-none">
-                        <GlassCard padding="none" className="pointer-events-auto flex items-center justify-between px-4 py-2 border-moon-800">
-
-                            {/* Navigation back to Dashboard */}
-                            <button
-                                onClick={() => navigate('/admin/dashboard')}
-                                className="p-2 text-slate-400 hover:text-electric transition-colors outline-none flex items-center gap-2"
-                            >
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                                </svg>
-                                <span className="text-xs font-bold uppercase tracking-wider hidden sm:block">Dashboard</span>
-                            </button>
-
-                            {/* The Arsenal Tools */}
-                            <div className="flex items-center gap-3">
-
-                                {/* Save Button */}
-                                <ElectricButton
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={handleSave}
-                                    isLoading={isSaving}
-                                >
-                                    Save
-                                </ElectricButton>
-
-                                <ElectricButton
-                                    variant="primary"
-                                    size="sm"
-                                    onClick={() => setIsModalOpen(true)}
-                                    className="shadow-[0_0_15px_var(--color-electric-glow)]"
-                                >
-                                    <span className="text-[10px] mr-1">✦</span> Generate AI
-                                </ElectricButton>
-                            </div>
-
-                        </GlassCard>
+                    {/* 3. Simple Top-Left Dashboard Return Button */}
+                    <Panel position="top-left" className="m-4">
+                        <ElectricButton variant="secondary" size="sm" onClick={() => navigate('/admin/dashboard')}>
+                            ← Dashboard
+                        </ElectricButton>
                     </Panel>
+
                 </ReactFlow>
             </div>
         </ReactFlowProvider>

@@ -108,6 +108,9 @@ import InteractiveNode from "./nodes/InteractiveNode.jsx";
 import OrthogonalEdge from "./edges/OrthogonalEdge.jsx";
 import StraightEdge from "./edges/StraightEdge.jsx";
 
+
+import ActionToolbar from "./canvas/ActionToolbar.jsx";
+
 // Canvas Dictionary
 export const customNodeTypes = {
   node_shape: ShapeNode,
@@ -138,6 +141,7 @@ export {
   Header,
   AdminHeader,
   PublicHeader,
+  ActionToolbar,
   // LogoutBtn,
   Footer,
   ShapeNode,
