@@ -110,6 +110,7 @@ import StraightEdge from "./edges/StraightEdge.jsx";
 
 
 import ActionToolbar from "./canvas/ActionToolbar.jsx";
+import CanvasHeader from "./canvas/CanvasHeader.jsx";
 
 // Canvas Dictionary
 export const customNodeTypes = {
@@ -142,6 +143,7 @@ export {
   AdminHeader,
   PublicHeader,
   ActionToolbar,
+  CanvasHeader,
   // LogoutBtn,
   Footer,
   ShapeNode,
