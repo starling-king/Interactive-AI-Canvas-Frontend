@@ -22,7 +22,7 @@ function Signin() {
   // 3. Auto-Routing: If they are already logged in, push them straight to the Workspace
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/workspace", { replace: true });
+      navigate("/admin/dashboard", { replace: true });
       return;
     }
 

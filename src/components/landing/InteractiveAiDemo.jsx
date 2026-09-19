@@ -66,6 +66,8 @@ export default function InteractiveAiDemo() {
                 edgeTypes={customEdgeTypes}
                 fitView
                 fitViewOptions={{ padding: 0.2 }}
+
+                proOptions={{ hideAttribution: true }}
                 // Lock down interactions to make it act like a presentation video
                 nodesDraggable={false}
                 nodesConnectable={false}
