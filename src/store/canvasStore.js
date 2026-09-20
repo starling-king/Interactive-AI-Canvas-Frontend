@@ -24,6 +24,11 @@ export const useCanvasStore = create((set, get) => ({
 
     addNode: (node) => set({ nodes: [...get().nodes, node] }),
 
+    deleteSelectedElements: () => set({
+        nodes: get().nodes.filter((node) => !node.selected),
+        edges: get().edges.filter((edge) => !edge.selected),
+    }),
+
     onNodesChange: (changes) => set({
         nodes: applyNodeChanges(changes, get().nodes),
     }),
