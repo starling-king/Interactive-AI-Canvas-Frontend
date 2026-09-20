@@ -21,6 +21,9 @@ export const useCanvasStore = create((set, get) => ({
     }),
 
     // --- 3. KINETIC SETTERS (React Flow Requirements) ---
+
+    addNode: (node) => set({ nodes: [...get().nodes, node] }),
+
     onNodesChange: (changes) => set({
         nodes: applyNodeChanges(changes, get().nodes),
     }),

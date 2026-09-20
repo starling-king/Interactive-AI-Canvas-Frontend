@@ -111,6 +111,9 @@ import StraightEdge from "./edges/StraightEdge.jsx";
 
 import ActionToolbar from "./canvas/ActionToolbar.jsx";
 import CanvasHeader from "./canvas/CanvasHeader.jsx";
+import VersionSidebar from "./canvas/VersionSidebar.jsx";
+import NodeInspector from "./canvas/NodeInspector.jsx";
+import ArsenalPanel from "./canvas/ArsenalPanel.jsx";
 
 // Canvas Dictionary
 export const customNodeTypes = {
@@ -144,6 +147,9 @@ export {
   PublicHeader,
   ActionToolbar,
   CanvasHeader,
+  VersionSidebar,
+  NodeInspector,
+  ArsenalPanel,
   // LogoutBtn,
   Footer,
   ShapeNode,
