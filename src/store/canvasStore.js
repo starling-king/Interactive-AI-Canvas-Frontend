@@ -9,6 +9,48 @@ export const useCanvasStore = create((set, get) => ({
     globalMetrics: {},
     isFetching: false, // Used for the initial load of the canvas
 
+    // --- 2. MICRO-HISTORY (UNDO/REDO STACK) ---
+
+    past: [],
+    future: [],
+
+    takeSnapshot: () => {
+        const { nodes, edges, past } = get();
+        // Cap the memory at 50 steps so the browser doesn't crash from memory bloat
+        const newPast = [...past, { nodes, edges }].slice(-50);
+        set({ past: newPast, future: [] }); // Clear future on new action
+    },
+
+    undo: () => {
+        const { past, future, nodes, edges } = get();
+        if (past.length === 0) return;
+
+        const previousState = past[past.length - 1];
+        const newPast = past.slice(0, past.length - 1);
+
+        set({
+            past: newPast,
+            future: [{ nodes, edges }, ...future],
+            nodes: previousState.nodes,
+            edges: previousState.edges
+        });
+    },
+
+    redo: () => {
+        const { past, future, nodes, edges } = get();
+        if (future.length === 0) return;
+
+        const nextState = future[0];
+        const newFuture = future.slice(1);
+
+        set({
+            past: [...past, { nodes, edges }],
+            future: newFuture,
+            nodes: nextState.nodes,
+            edges: nextState.edges
+        });
+    },
+
     // --- 2. NETWORK SETTERS ---
     setFetching: (status) => set({ isFetching: status }),
 
