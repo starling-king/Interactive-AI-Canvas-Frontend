@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import aiOrchestrationServices from '../Services/aiOrchestration.services.js';
 import { useAiStore } from '../store/aiStore.js';
 import { useCanvasStore } from '../store/canvasStore.js';
+import { healAiPayload } from '../utils/aiValidator.js';
 
 export const useAiActions = () => {
     const [error, setError] = useState(null);
@@ -62,9 +63,12 @@ export const useAiActions = () => {
 
                 // Hydrate the React Flow Canvas instantly
                 if (generatedGraph) {
+
+                    const safeData = healAiPayload(generatedGraph);
+
                     setCanvasState(
-                        generatedGraph.nodesData || [],
-                        generatedGraph.edgesData || [],
+                        safeData.nodesData || [],
+                        safeData.edgesData || [],
                         generatedGraph.viewport || { x: 0, y: 0, zoom: 1 },
                         generatedGraph.globalMetrics || {}
                     );
@@ -84,6 +88,7 @@ export const useAiActions = () => {
         if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
 
         pollIntervalRef.current = setInterval(async () => {
+            
             const currentStatus = await checkJobStatus(orchestrationId);
 
             if (currentStatus === 'completed' || currentStatus === 'failed') {

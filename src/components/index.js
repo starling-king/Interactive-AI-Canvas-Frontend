@@ -107,6 +107,7 @@ import InteractiveNode from "./nodes/InteractiveNode.jsx";
 // --- 5. Master Canvas Edges (DO NOT TOUCH) ---
 import OrthogonalEdge from "./edges/OrthogonalEdge.jsx";
 import StraightEdge from "./edges/StraightEdge.jsx";
+import KineticEdge from "./edges/KineticEdge.jsx";
 
 
 import ActionToolbar from "./canvas/ActionToolbar.jsx";
@@ -128,6 +129,7 @@ export const customNodeTypes = {
 export const customEdgeTypes = {
   edge_orthogonal: OrthogonalEdge,
   edge_straight: StraightEdge,
+  edge_kinetic: KineticEdge,
 };
 
 // Centralized Exports

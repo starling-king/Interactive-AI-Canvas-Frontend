@@ -510,7 +510,7 @@ export default function InteractiveNode({ id, data, selected, isConnectable }) {
             }
 
             const scope = { ...globalMetrics };
-            const computedResults = MathEngine.processFormulas(data.formulas, scope);
+            const computedResults = MathEngine.processFormula(data.formulas, scope);
 
             setMathResults(computedResults);
 
