@@ -10,22 +10,38 @@ export default function TableNode({ data, selected, isConnectable }) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 220, damping: 18 }}
-            className={`min-w-[220px] max-w-[320px] bg-slate-900/95 border rounded-xl shadow-2xl overflow-hidden backdrop-blur-md transition-all ${
-                selected 
-                    ? 'border-blue-500 ring-2 ring-blue-500/40 shadow-blue-500/20' 
-                    : 'border-slate-700/80 hover:border-slate-500'
-            }`}
+            className={`min-w-[220px] max-w-[320px] bg-slate-900/95 border rounded-xl shadow-2xl overflow-hidden backdrop-blur-md transition-all ${selected
+                ? 'border-blue-500 ring-2 ring-blue-500/40 shadow-blue-500/20'
+                : 'border-slate-700/80 hover:border-slate-500'
+                }`}
         >
             {/* Top / Bottom Handles */}
             <Handle
                 type="target"
                 position={Position.Top}
+                id="top"
+                isConnectable={isConnectable}
+                className="w-2.5 h-2.5 bg-blue-500 border border-slate-950 opacity-0 group-hover:opacity-100 transition-opacity"
+            />
+            <Handle
+                type="source"
+                position={Position.Top}
+                id="top"
+                isConnectable={isConnectable}
+                className="w-2.5 h-2.5 bg-blue-500 border border-slate-950 opacity-0 group-hover:opacity-100 transition-opacity"
+            />
+
+            <Handle
+                type="target"
+                position={Position.Bottom}
+                id="bottom"
                 isConnectable={isConnectable}
                 className="w-2.5 h-2.5 bg-blue-500 border border-slate-950 opacity-0 group-hover:opacity-100 transition-opacity"
             />
             <Handle
                 type="source"
                 position={Position.Bottom}
+                id="bottom"
                 isConnectable={isConnectable}
                 className="w-2.5 h-2.5 bg-blue-500 border border-slate-950 opacity-0 group-hover:opacity-100 transition-opacity"
             />
@@ -34,14 +50,30 @@ export default function TableNode({ data, selected, isConnectable }) {
             <Handle
                 type="target"
                 position={Position.Left}
-                id="rel-left"
+                id="left"
                 isConnectable={isConnectable}
                 className="w-2.5 h-2.5 bg-emerald-400 border border-slate-950 -left-1.5"
+            />
+            {/* Relational Handles for 1:N / N:1 Database Connections */}
+            <Handle
+                type="source"
+                position={Position.Left}
+                id="left"
+                isConnectable={isConnectable}
+                className="w-2.5 h-2.5 bg-emerald-400 border border-slate-950 -left-1.5"
+            />
+
+            <Handle
+                type="target"
+                position={Position.Right}
+                id="right"
+                isConnectable={isConnectable}
+                className="w-2.5 h-2.5 bg-emerald-400 border border-slate-950 -right-1.5"
             />
             <Handle
                 type="source"
                 position={Position.Right}
-                id="rel-right"
+                id="right"
                 isConnectable={isConnectable}
                 className="w-2.5 h-2.5 bg-emerald-400 border border-slate-950 -right-1.5"
             />
@@ -78,11 +110,10 @@ export default function TableNode({ data, selected, isConnectable }) {
                                     {row.name}
                                 </span>
                                 <span
-                                    className={`font-mono text-[10px] shrink-0 ${
-                                        isPk
-                                            ? 'text-emerald-400 font-semibold'
-                                            : 'text-slate-400'
-                                    }`}
+                                    className={`font-mono text-[10px] shrink-0 ${isPk
+                                        ? 'text-emerald-400 font-semibold'
+                                        : 'text-slate-400'
+                                        }`}
                                 >
                                     {row.type}
                                 </span>

@@ -103,11 +103,14 @@ import TableNode from "./nodes/TableNode.jsx";
 import TextNode from "./nodes/TextNode.jsx";
 import IconNode from "./nodes/IconNode.jsx";
 import InteractiveNode from "./nodes/InteractiveNode.jsx";
+import ContainerNode from "./nodes/ContainerNode.jsx";
+import NodeWrapper from "./nodes/NodeWrapper.jsx";
 
 // --- 5. Master Canvas Edges (DO NOT TOUCH) ---
 import OrthogonalEdge from "./edges/OrthogonalEdge.jsx";
 import StraightEdge from "./edges/StraightEdge.jsx";
 import KineticEdge from "./edges/KineticEdge.jsx";
+import RelationalEdge from "./edges/RelationalEdge.jsx";
 
 
 import ActionToolbar from "./canvas/ActionToolbar.jsx";
@@ -123,6 +126,7 @@ export const customNodeTypes = {
   node_text: TextNode,
   node_icon: IconNode,
   node_interactive: InteractiveNode,
+  node_container: ContainerNode,
 };
 
 // Edge Dictionary
@@ -130,6 +134,7 @@ export const customEdgeTypes = {
   edge_orthogonal: OrthogonalEdge,
   edge_straight: StraightEdge,
   edge_kinetic: KineticEdge,
+  edge_relational: RelationalEdge,
 };
 
 // Centralized Exports

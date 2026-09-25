@@ -31,7 +31,7 @@
 // // // //     const shapeType = data.shapeType || 'rectangle';
 // // // //     const isPill = shapeType === 'pill';
 // // // //     const isPureCssRect = shapeType === 'rectangle';
-    
+
 // // // //     // Retrieve the SVG if it exists in the registry
 // // // //     const SvgComponent = ShapeRegistry[shapeType];
 
@@ -363,9 +363,16 @@ export default function ShapeNode({ id, data, selected, isConnectable }) {
             >
 
                 {/* INFINITE EDGE HANDLES */}
-                <Handle type="target" position={Position.Top} isConnectable={isConnectable} className="opacity-0 hover:opacity-100 w-full h-3 bg-blue-500/50 rounded-none border-none transition-opacity z-20" />
-                <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} className="opacity-0 hover:opacity-100 w-full h-3 bg-blue-500/50 rounded-none border-none transition-opacity z-20" />
+                <Handle type="target" position={Position.Top} id="top" isConnectable={isConnectable} className="opacity-0 hover:opacity-100 w-full h-3 bg-blue-500/50 rounded-none border-none transition-opacity z-20" />
+                <Handle type="source" position={Position.Top} id="top" isConnectable={isConnectable} className="opacity-0 hover:opacity-100 w-full h-3 bg-blue-500/50 rounded-none border-none transition-opacity z-20" />
+
+                <Handle type="target" position={Position.Bottom} id="bottom" isConnectable={isConnectable} className="opacity-0 hover:opacity-100 w-full h-3 bg-blue-500/50 rounded-none border-none transition-opacity z-20" />
+                <Handle type="source" position={Position.Bottom} id="bottom" isConnectable={isConnectable} className="opacity-0 hover:opacity-100 w-full h-3 bg-blue-500/50 rounded-none border-none transition-opacity z-20" />
+
+                <Handle type="target" position={Position.Left} isConnectable={isConnectable} className="opacity-0 hover:opacity-100 w-3 h-full bg-blue-500/50 rounded-none border-none transition-opacity z-20" id="left" />
                 <Handle type="source" position={Position.Left} isConnectable={isConnectable} className="opacity-0 hover:opacity-100 w-3 h-full bg-blue-500/50 rounded-none border-none transition-opacity z-20" id="left" />
+
+                <Handle type="target" position={Position.Right} isConnectable={isConnectable} className="opacity-0 hover:opacity-100 w-3 h-full bg-blue-500/50 rounded-none border-none transition-opacity z-20" id="right" />
                 <Handle type="source" position={Position.Right} isConnectable={isConnectable} className="opacity-0 hover:opacity-100 w-3 h-full bg-blue-500/50 rounded-none border-none transition-opacity z-20" id="right" />
 
                 {/* THE TEXTAREA */}
