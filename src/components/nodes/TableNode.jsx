@@ -136,14 +136,30 @@ export default function TableNode({ id, data, selected, isConnectable }) {
                     }`}
             >
                 {/* 8 Strict Overlapping Routing Handles (Top/Bottom = Blue, Left/Right = Emerald Relational) */}
-                <Handle type="target" position={Position.Top} id="top" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-blue-500 border border-slate-950 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+                {/* <Handle type="target" position={Position.Top} id="top" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-blue-500 border border-slate-950 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
                 <Handle type="source" position={Position.Top} id="top" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-blue-500 border border-slate-950 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
                 <Handle type="target" position={Position.Bottom} id="bottom" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-blue-500 border border-slate-950 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
                 <Handle type="source" position={Position.Bottom} id="bottom" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-blue-500 border border-slate-950 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
                 <Handle type="target" position={Position.Left} id="left" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-emerald-400 border border-slate-950 -left-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
                 <Handle type="source" position={Position.Left} id="left" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-emerald-400 border border-slate-950 -left-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
                 <Handle type="target" position={Position.Right} id="right" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-emerald-400 border border-slate-950 -right-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
-                <Handle type="source" position={Position.Right} id="right" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-emerald-400 border border-slate-950 -right-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+                <Handle type="source" position={Position.Right} id="right" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-emerald-400 border border-slate-950 -right-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-20" /> */}
+
+                {/* Top Handles (Blue) */}
+                <Handle type="target" position={Position.Top} id="top-target" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-blue-500 border border-slate-950 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+                <Handle type="source" position={Position.Top} id="top-source" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-blue-500 border border-slate-950 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+
+                {/* Bottom Handles (Blue) */}
+                <Handle type="target" position={Position.Bottom} id="bottom-target" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-blue-500 border border-slate-950 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+                <Handle type="source" position={Position.Bottom} id="bottom-source" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-blue-500 border border-slate-950 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+
+                {/* Left Handles (Emerald green for relational styling) */}
+                <Handle type="target" position={Position.Left} id="left-target" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-emerald-400 border border-slate-950 -left-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+                <Handle type="source" position={Position.Left} id="left-source" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-emerald-400 border border-slate-950 -left-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+
+                {/* Right Handles (Emerald green for relational styling) */}
+                <Handle type="target" position={Position.Right} id="right-target" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-emerald-400 border border-slate-950 -right-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+                <Handle type="source" position={Position.Right} id="right-source" isConnectable={isConnectable} className="w-2.5 h-2.5 bg-emerald-400 border border-slate-950 -right-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
 
                 {/* THE HEADER */}
                 <div className="flex-none flex items-center justify-between px-3.5 py-2.5 bg-slate-800/80 border-b border-slate-700/80 pointer-events-none">
