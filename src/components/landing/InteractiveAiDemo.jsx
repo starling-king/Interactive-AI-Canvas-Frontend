@@ -7,43 +7,70 @@ import { customNodeTypes, customEdgeTypes } from "../index.js";
 
 // 1. HARDCODED DEMO DATA
 // This simulates exactly what your Gemini backend returns.
+// const demoNodes = [
+//     {
+//         id: "cloud",
+//         type: "node_container",
+//         position: { x: 0, y: 0 },
+//         data: { label: "AWS Pipeline (Demo)", width: 850, height: 400 }
+//     },
+//     {
+//         id: "user",
+//         type: "node_icon",
+//         position: { x: 50, y: 160 },
+//         data: { iconType: "default" }
+//     },
+//     {
+//         id: "math",
+//         type: "node_interactive",
+//         position: { x: 220, y: 140 },
+//         data: { controlType: "math", formulas: ["tax = subtotal * 0.08", "total = subtotal + tax"] }
+//     },
+//     {
+//         id: "gate",
+//         type: "node_interactive",
+//         position: { x: 480, y: 150 },
+//         data: { controlType: "gate", condition: "total > 5000" }
+//     },
+//     {
+//         id: "db",
+//         type: "node_table",
+//         position: { x: 730, y: 100 },
+//         data: { title: "Orders_DB", rows: [{ name: "order_id", type: "string pk" }, { name: "total", type: "integer" }] }
+//     }
+// ];
+
+// const demoEdges = [
+//     { id: "e1", source: "user", target: "math", type: "edge_orthogonal", animated: true },
+//     { id: "e2", source: "math", target: "gate", type: "edge_orthogonal", animated: true },
+//     { id: "e3", source: "gate", target: "db", type: "edge_kinetic", animated: true, label: "True" }
+// ];
+
+// 1. HARDCODED DEMO DATA 
 const demoNodes = [
     {
-        id: "cloud",
-        type: "node_container",
-        position: { x: 0, y: 0 },
-        data: { label: "AWS Pipeline (Demo)", width: 850, height: 400 }
-    },
-    {
-        id: "user",
-        type: "node_icon",
-        position: { x: 50, y: 160 },
-        data: { iconType: "default" }
-    },
-    {
-        id: "math",
+        id: "slider-1",
         type: "node_interactive",
-        position: { x: 220, y: 140 },
-        data: { controlType: "math", formulas: ["tax = subtotal * 0.08", "total = subtotal + tax"] }
+        position: { x: 100, y: 150 },
+        data: { controlType: "slider", label: "Subtotal", metricKey: "demo_subtotal", value: 5500, min: 100, max: 15000, isGlobal: false }
     },
     {
-        id: "gate",
+        id: "gate-1",
         type: "node_interactive",
-        position: { x: 480, y: 150 },
-        data: { controlType: "gate", condition: "total > 5000" }
+        position: { x: 450, y: 150 },
+        data: { controlType: "gate", label: "High Value Check", condition: "demo_subtotal > 5000", isGlobal: false }
     },
     {
-        id: "db",
+        id: "db-1",
         type: "node_table",
-        position: { x: 730, y: 100 },
+        position: { x: 750, y: 100 },
         data: { title: "Orders_DB", rows: [{ name: "order_id", type: "string pk" }, { name: "total", type: "integer" }] }
     }
 ];
 
 const demoEdges = [
-    { id: "e1", source: "user", target: "math", type: "edge_orthogonal", animated: true },
-    { id: "e2", source: "math", target: "gate", type: "edge_orthogonal", animated: true },
-    { id: "e3", source: "gate", target: "db", type: "edge_kinetic", animated: true, label: "True" }
+    { id: "e1", source: "slider-1", target: "gate-1", type: "edge_orthogonal", animated: true },
+    { id: "e2", source: "gate-1", target: "db-1", type: "edge_kinetic", animated: true, label: "TRUE" }
 ];
 
 export default function InteractiveAiDemo() {
