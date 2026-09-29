@@ -1,0 +1,609 @@
+**InteractiveNode** is a multi-modal React Flow node supporting sliders, toggles, math formulas, and logic gates that evaluates downstream or global metrics and dispatches debounced JSON payloads through a standardized port interface.
+
+### Requirements
+
+* **Runtime & Ecosystem:** Requires `@xyflow/react` context (for `useReactFlow`, `useNodeConnections`, and `useNodesData`) and Tailwind CSS configured with custom color tokens (`electric`, `moon-700`, `moon-800`, `moon-900`, `moon-950`).
+* **External Dependencies:**
+* `useCanvasStore`: Must expose `globalMetrics` (object) and `updateGlobalMetrics(object)`.
+* `MathEngine`: Must implement `processFormula(formulaString, scopeObject)` and `evaluateCondition(conditionString, scopeObject)`.
+* Components: `NodeWrapper` and child controls (`SliderControl`, `ToggleControl`, `MathControl`, `GateControl`).
+
+
+* **Expected Node Data Contract:**
+* `data.controlType`: `'slider' | 'toggle' | 'math' | 'gate'` (defaults to `'slider'`).
+* `data.label` or `data.metricKey`: Sets the variable key in the output payload (defaults to `'out'`).
+* `data.formula` / `data.formulas`: Required for `controlType === 'math'`.
+* `data.condition`: Required string for `controlType === 'gate'`.
+* `data.value`, `data.min`, `data.defaultState`, and `data.isGlobal`: Optional initialization values.
+
+
+* **Upstream Data Contract:** Connected upstream nodes must output a nested object formatted as `node.data.outputValues.out = { [key]: value }` for their values to enter `incomingJsonScope`.
+
+---
+
+### Edge Cases & AI Gotchas
+
+* **Payload Collisions in Multiple Inputs:** `incomingJsonScope` merges upstream node payloads into a single flat object using `Object.assign` syntax (`{ ...scope, ...payload }`). If multiple source nodes emit the same variable key (e.g., `'out'`), the last one iterated silently overwrites earlier inputs with no handle-specific mapping (`left` vs `left-2`).
+* **Circular Connection Loops:** Because upstream node changes immediately update `useNodesData`, creating a feedback loop (Node A $\rightarrow$ Node B $\rightarrow$ Node A) will trigger continuous debounced recalculations and updates, leading to canvas performance drops or infinite render cycles.
+* **Non-Numeric or Divide-by-Zero Tooltip Crashes:** The right-handle output label executes `Number(prevOutRef.current[nodeVarName]).toFixed(2)`. If `MathEngine` returns a string, `NaN`, `null`, or complex object, the hover tooltip will display `NaN` or throw on invalid types.
+* **Formula Auto-Assignment Pitfall:** If `data.formula` does not contain an `=`, the component automatically prepends `${nodeVarName} = `. If the input formula already assigns to another variable or contains syntax issues, `computedResults[nodeVarName]` might return `undefined`, causing the output value to fall back to `0`.
+* **Asymmetric Global Metric Syncing:** The header button allows toggling `isGlobal` on `math` and `gate` nodes (since `hasInput1` is true), but the dispatch engine explicitly restricts writing to global metrics:
+```javascript
+if (isGlobal && (controlType === 'slider' || controlType === 'toggle'))
+
+```
+
+
+Consequently, `math` and `gate` nodes read from `globalMetrics` when toggled to Global, but will never write their computed results back into `globalMetrics`.
+* **Wired Toggle Arbitrary Key Pick:** In `isWiredToggle`, the state evaluates `Object.values(incomingJsonScope)[0]`. If multiple variables arrive in `incomingJsonScope`, JavaScript object key enumeration order determines which upstream variable forces the toggle on or off.
+
+
+**ShapeNode** is a customizable, resizable diagramming node that renders pure CSS clip-path geometric shapes across multiple color themes, supports double-click inline text editing, and exposes full-edge bidirectional handles on all four sides.
+
+### Requirements
+
+* **Runtime & Framework Context:** Requires `@xyflow/react` to provide `useReactFlow`, `Handle`, and `Position`.
+
+
+* **Component Dependency:** Depends on an external `NodeWrapper.jsx` component that accepts `minWidth={100}`, `minHeight={80}`, and `defaultAnimation`.
+
+
+* **Tailwind CSS Tokens:** Relies on Tailwind utility classes and theme tokens like `border-electric`, `var(--color-electric-glow)`, and pre-defined theme palettes (`slate`, `blue`, `rose`, `emerald`, `amber`).
+
+
+* **Node Data Contract:**
+* `data.label`: Defines the visible text content (defaults to `'Node'`).
+
+
+* `data.shapeType`: Matches a key in `CSS_SHAPES` (`rectangle`, `pill`, `ellipse`, `cylinder`, `diamond`, `hexagon`, `triangle`, `parallelogram`, `trapezoid`, `document`, `star`; defaults to `'rectangle'`).
+
+
+* `data.colorTheme`: Matches a key in `COLOR_THEMES` (`slate`, `blue`, `rose`, `emerald`, `amber`; defaults to `'slate'`).
+
+
+* `data.animationStyle`: String determining the wrapper animation passed to `NodeWrapper` (defaults to `'float'`).
+
+
+
+
+
+---
+
+### Edge Cases & AI Gotchas
+
+* **Collocated Handle Overlap & Hitbox Collision:** The target and source handles for each side (e.g., `top-target` and `top-source`) share identical geometry and dimensions (`w-full h-3` or `w-3 h-full`) positioned directly over one another. Because they occupy the same DOM coordinates, edge connections may suffer from click-target ambiguity or drop conflicts depending on DOM rendering order.
+
+
+* **Text Bleed on Narrow or Diagonal Shapes:** The `clipPath` is placed on the background layer (Layer 2) while the text container sits on Layer 3 without clipping. For sharp or concave geometries like `triangle`, `diamond`, or `star`, multi-line text or the `<textarea>` input will visibly bleed outside the rendered shape boundaries.
+
+
+* **Stale Text State from External Props:** The node initializes text locally via `useState(data.label || 'Node')`. If an inspector panel, AI tool, or external undo/redo stack updates `data.label` without remounting the component, the component will not synchronize the local `text` state because it lacks a reactive `useEffect` watcher.
+
+
+* **Border Truncation from CSS Clip Paths:** The visual shape layer applies both `border-2` and CSS `clipPath`. Because CSS `clip-path` cuts off geometry after the border is applied, the border stroke on angled edges (like diamonds, triangles, or documents) gets sliced unevenly compared to native SVG strokes.
+
+
+* **Keyboard Navigation Traps:** Pressing `Enter` without `Shift` invokes `e.preventDefault()` and triggers `saveText()`. If a user tries to create intentional line breaks, they must know to use `Shift + Enter`, otherwise single-line inputs will instantly commit and close the editor.
+
+**IconNode** is a resizable architecture diagram node that renders vector tech and infrastructure icons from an internal registry inside a fluid glass badge, featuring configurable animations, cardinal connection handles, and an optional label.
+
+### Requirements
+
+* **Runtime & Framework Context:** Requires `@xyflow/react` to provide `Handle` and `Position` primitives.
+
+
+* **Component Dependency:** Relies on `NodeWrapper.jsx` accepting `minWidth={80}`, `minHeight={80}`, and `defaultAnimation`.
+
+
+* **Tailwind Theme Tokens:** Requires custom theme tokens including `border-electric`, `text-electric`, `var(--color-electric-glow)`, and the dark palette scale (`moon-700`, `moon-800`, `moon-900`).
+
+
+* **Node Data Contract:**
+* `data.iconType`: String matching an `IconRegistry` key (`server`, `database`, `cloud`, `api`, `microservice`, `user`, `users`, `lock`, `key`, `pulse`, `cpu`, `brain`, `filter`, `mail`, `mobile`, `globe`, `bot`, `shield`; defaults to `'default'`).
+
+
+* `data.label`: Optional string displayed below the icon badge.
+
+
+* `data.animationStyle`: Animation string passed down to `NodeWrapper` (defaults to `'pulse'`).
+
+
+
+
+
+---
+
+### Edge Cases & AI Gotchas
+
+* **Critical React Flow Bug — Duplicate Handle IDs:** The node defines both a `source` and a `target` handle sharing identical IDs for each direction (`id="top"`, `id="bottom"`, `id="left"`, `id="right"`). In React Flow, duplicate handle IDs on a single node cause undefined edge connection behavior, connection snapping glitches, and broken edge deserialization.
+
+
+* **Overlapping Full-Edge Handle Hitboxes:** Handles stretch across the entire width (`w-full h-3`) or height (`w-3 h-full`) and sit on `z-20`. Because source and target handles share the exact same bounds on each edge, clicking to drag an edge from a specific side creates click-target conflicts between the source and target layers.
+
+
+* **Corner Hitbox Collisions:** At the 4 corners where the horizontal (`w-full`) and vertical (`h-full`) handle overlays intersect, dragging near an edge corner can accidentally initiate an edge from the perpendicular handle rather than the intended direction.
+
+
+* **Aspect Ratio Letterboxing on Resize:** While the glass badge expands fluidly with node resizing (`flex-1 w-full`), the SVGs use fixed `viewBox="0 0 24 24"` with `w-1/2 h-1/2` dimensions. If the node is resized to an extreme aspect ratio (e.g., very wide and flat), default SVG `meet` scaling keeps the icon centered while leaving disproportionate empty padding inside the badge.
+
+
+* **Label Layout Clamping:** Both the badge container and the label container declare `shrink-0`. If a node has a multi-line or long label while resized to the minimum height (`80px`), the text will push against the wrapper bounds and can visually clip or overflow outside the node container.
+
+
+* **Silent Fallback on Missing Icons:** If an upstream process or AI assigns an unsupported `iconType` (e.g., `'kubernetes'` or `'lambda'`), it silently renders `IconRegistry.default` (concentric circles) without emitting a console warning or visual error state.
+
+**TableNode** is an interactive database schema and entity-relationship node that renders scrollable field definitions with primary key highlighting, features double-click in-place editing to manage table names and columns, and provides color-coded cardinal connection ports.
+
+### Requirements
+
+* **Runtime & Framework Context:** Requires `@xyflow/react` to supply `useReactFlow`, `Handle`, and `Position`.
+
+
+* **Component Dependency:** Relies on `NodeWrapper.jsx` configured with `minWidth={240}`, `minHeight={120}`, and `defaultAnimation`.
+
+
+* **Styling & CSS Tokens:** Requires Tailwind CSS classes including `border-electric`, `text-electric`, `bg-electric`, standard Slate shades, and an external utility class `custom-scrollbar` for table body overflow.
+
+
+* **Node Data Contract:**
+* `data.title` or `data.label`: String determining the header title (defaults to `'New_Table'`).
+
+
+* `data.rows`: Array of column objects formatted as `{ name: string, type: string }`.
+
+
+* `data.animationStyle`: String passed to `NodeWrapper` for motion effects (defaults to `'breathe'`).
+
+
+
+
+
+---
+
+### Edge Cases & AI Gotchas
+
+* **Desynchronization from External Prop Updates:** `localTitle` and `localRows` are initialized inside local `useState` hooks without a matching `useEffect` watcher. If an AI tool, undo/redo manager, or external inspector edits `data.rows` or `data.title` in React Flow's state, the node will not re-sync or display the new values unless it is unmounted and remounted.
+
+
+* **Uncommitted Edits on Blur / Deselection:** The editing interface lacks an `onBlur` trigger on the inputs and container. If an end user modifies fields and clicks away to deselect the node without explicitly clicking the "Save" button, the updates remain locked in uncommitted local state and are never propagated to React Flow's global graph store.
+
+
+* **Direct State Mutation in `handleUpdateRow`:** The row edit handler performs a shallow clone of the row array (`[...localRows]`) but mutates the inner field object directly via `updatedRows[index][field] = value`. This violates React state immutability patterns and can break memoization or history trackers downstream.
+
+
+* **Co-located Handle Ambiguity:** Each side shares identical coordinate handles for both target and source (e.g., `top-target` and `top-source` both occupy `w-2.5 h-2.5` at the same top offset). Because their hitboxes directly stack on `z-20`, dragging an edge outward or dropping onto the port can trigger the incorrect handle depending on DOM paint order.
+
+
+* **Lack of Field-Level Relational Routing:** Standard relational ER diagrams route foreign keys directly from specific columns, but `TableNode` only provides handles at the outer container level. There are no per-row handles, meaning connections cannot visually point to individual attributes or keys.
+
+**ContainerNode** is a static, resizable grouping boundary designed to visually partition canvas elements, featuring a double-click editable top-left tag badge, dashed perimeter styling, and full-edge cardinal connection handles on all four sides.
+
+### Requirements
+
+* **Runtime & Framework Context:** Requires `@xyflow/react` to provide `useReactFlow`, `Handle`, and `Position`.
+
+
+* **Component Dependency:** Relies on `NodeWrapper.jsx` accepting `minWidth={250}`, `minHeight={150}`, `defaultAnimation="none"`, and `isContainer={true}`.
+
+
+* **Tailwind Theme Tokens:** Requires Tailwind CSS classes including `border-electric`, `text-electric`, and standard Slate and Blue color palettes.
+
+
+* **Node Data Contract:**
+* `data.label`: Optional string defining the header label text (defaults to `'Grouping Container'`).
+
+
+
+
+
+---
+
+### Edge Cases & AI Gotchas
+
+* **No Automated Child Node Parenting:** While `isContainer={true}` is passed down to `NodeWrapper`, this component by itself does not manage React Flow's hierarchical child parenting (`parentId`, `extent: 'parent'`). Unless your canvas store or drop handlers explicitly configure child nodes with `parentId: id`, moving this container will not drag enclosed nodes along with it.
+
+
+* **Stale Label State from External Props:** `localLabel` is initialized with `useState(data.label || 'Grouping Container')` without a reactive `useEffect` watcher. If an AI command, inspector panel, or undo/redo stack modifies `data.label` in React Flow's store, the component will retain its stale local state until remounted.
+
+
+* **Collocated Handle Hitbox Conflict:** Both the source and target handles on each edge (e.g., `top-target` and `top-source`) share identical geometry (`w-full h-3` or `w-3 h-full`) and sit on `z-20`. Because their active areas completely overlap, connection snapping or drag-out initiation can be ambiguous or register to the wrong handle depending on DOM paint order.
+
+
+* **Perpendicular Corner Overlap:** The full-width top/bottom handles (`w-full h-3`) and full-height side handles (`w-3 h-full`) physically intersect at the container's four corners. Dragging a connection near a corner can trigger the perpendicular handle rather than the intended edge.
+
+
+* **Tag Header and Top/Left Handle Interference:** The editable badge sits at `absolute top-0 left-0`. Because the full-width `top` and full-height `left` handles stretch across those same edges, mouse interactions near the top-left badge can trigger handle hover highlights or interfere with double-click text editing.
+
+**TextNode** is a lightweight, frameless canvas annotation node that provides auto-expanding multiline text input alongside bidirectional cardinal connection ports.
+
+### Requirements
+
+* **Runtime & Framework Context:** Requires `@xyflow/react` to provide `Handle` and `Position`.
+
+
+* **Tailwind CSS Utility Support:** Relies on standard Tailwind styling utilities including `text-slate-200`, `placeholder-slate-500`, and `bg-slate-400`.
+
+
+* **Node Data Contract:**
+* `data.text`: String holding the initial text content (defaults to `"Type something..."`). Note that it expects `data.text` rather than the `data.label` convention used across your other nodes.
+
+
+
+
+
+---
+
+### Edge Cases & AI Gotchas
+
+* **Zero Persistence to Canvas Graph Store:** The component updates only local React state (`useState`) on change. It does not invoke `useReactFlow()` or `updateNodeData` on change or blur, meaning any user-entered text will be completely lost during graph serialization, export, or canvas reloads.
+
+
+* **Critical React Flow Bug — Duplicate Handle IDs:** Both source and target handles on each cardinal side share identical identifiers (`id="top"`, `id="bottom"`, `id="left"`, `id="right"`). React Flow requires unique handle IDs per node; having identical IDs across types causes edge connection snapping glitches and broken graph deserialization.
+
+
+* **Missing Canvas Drag Isolation (`nodrag` / `nopan`):** The `<textarea>` does not include React Flow's `nodrag` or `nopan` classes. Attempting to click and drag to select text inside the textarea will trigger React Flow's node drag listener, moving the node across the canvas rather than selecting text.
+
+
+* **Omission of `NodeWrapper`:** Unlike `InteractiveNode`, `ShapeNode`, `IconNode`, `TableNode`, and `ContainerNode`, this component renders as a plain `<div>` without `NodeWrapper`. As a result, it lacks selection rings, global animations, canvas resizer handles, and standardized min/max dimension boundaries.
+
+
+* **Naive Row Height Calculation & Text Clipping:** Row count is calculated strictly via `text.split('\n').length`. If a single line exceeds the container width and wraps naturally without an explicit newline character (`\n`), the row count does not increment, causing text to clip or disappear vertically due to `overflow-hidden`.
+
+
+* **Schema Inconsistency (`data.text` vs. `data.label`):** The component binds exclusively to `data.text`. If an AI generator or inspector script populates standard node data using `{ label: "..." }` (as done in `ShapeNode`, `IconNode`, or `ContainerNode`), the text will be ignored and default to `"Type something..."`.
+
+
+### 1. KineticEdge.jsx
+
+**KineticEdge** is a 90-degree smooth-step routing connector that renders animated SVG `<animateMotion>` particle bursts along the wire path whenever triggered by manual animation props or upstream node activity.
+
+* **Requirements:**
+* **Framework Context:** Requires `@xyflow/react` primitives (`BaseEdge`, `getSmoothStepPath`, `EdgeLabelRenderer`, `MarkerType`, `useInternalNode`).
+
+
+* **Props Contract:** Requires standard React Flow edge props (`id`, `source`, `sourceX`, `sourceY`, `targetX`, `targetY`, `sourcePosition`, `targetPosition`).
+
+
+* **Data Contract:** Supports `data.colorTheme` (`'rose'`, `'emerald'`, `'amber'`, defaulting to electric blue `#3b82f6`), `data.animated` (boolean), and upstream node state (`sourceNode.data.value === true` or `sourceNode.data.isActive === true`).
+
+
+
+
+* **Edge Cases & AI Gotchas:**
+* **SVG Animation Render Overhead:** Running three concurrent `<animateMotion>` loops on multiple kinetic edges will cause CPU frame drops and canvas stuttering on complex diagrams.
+
+
+* **Smart Sensor Boolean Narrowing:** The sensor specifically evaluates `sourceNode?.data?.value === true || sourceNode?.data?.isActive === true`. If an upstream `InteractiveNode` produces non-boolean data (like numbers from sliders or formulas), or outputs nested payloads under `data.outputValues.out`, the edge ignores it and will not animate.
+
+
+* **No Selection Feedback or Click Hitbox:** Unlike `OrthogonalEdge`, `KineticEdge` lacks `selected` styling and does not set `interactionWidth`. Clicking on this 2px, semi-transparent line (`strokeOpacity: 0.6`) to select or delete it is difficult for users.
+
+
+* **Offset Corner Loops:** Built with `offset: 30` and `borderRadius: 20`. If connected nodes are closer than 60px to each other, the path can form erratic backwards S-curves or loop over itself.
+
+
+
+
+
+---
+
+### 2. OrthogonalEdge.jsx
+
+**OrthogonalEdge** is a production-grade 90-degree rounded orthogonal connection wire featuring a 25px invisible click area, electric blue selection glow, smart sensor activation, and floating badge labels.
+
+* **Requirements:**
+* **Framework Context:** Requires `@xyflow/react` (`BaseEdge`, `getSmoothStepPath`, `EdgeLabelRenderer`, `MarkerType`, `useInternalNode`).
+
+
+* **Tailwind & CSS Tokens:** Relies on Tailwind's `animate-pulse`, `nodrag`, `nopan`, and color utilities.
+
+
+* **Data Contract:** Accepts `selected` (boolean), `data.animated` (boolean), `data.colorTheme` (fallback to `#94a3b8`), and edge `label`.
+
+
+
+
+* **Edge Cases & AI Gotchas:**
+* **Pulse vs Flowing Dash Animation:** Active states apply Tailwind's `animate-pulse` class rather than React Flow's native `animated` SVG dash stroke. This fades the entire wire's opacity in and out instead of showing directional moving dashes.
+
+
+* **SVG Marker Cache Desynchronization:** While `safeMarkerEnd` updates `color: edgeColor`, React Flow's SVG marker definitions can cache earlier states. Rapidly selecting or unselecting multiple edges may leave arrowhead colors out of sync with wire strokes.
+
+
+* **Fixed Offset Clipping:** The hardcoded `offset: 30` prevents wires from entering the rear of a node, but connecting two nodes in tight vertical or horizontal alignment can force unnecessary stepped jogs instead of clean straight lines.
+
+
+
+
+
+---
+
+### 3. RelationalEdge.jsx
+
+**RelationalEdge** is a specialized entity-relationship connector rendering a 90-degree dashed line with automated closed arrowheads and floating condition/cardinality labels.
+
+* **Requirements:**
+* **Framework Context:** Requires `@xyflow/react` (`BaseEdge`, `getSmoothStepPath`, `EdgeLabelRenderer`, `MarkerType`, `useInternalNode`).
+
+
+* **Props Contract:** Requires standard React Flow edge props along with optional `label` and `animated`.
+
+
+
+
+* **Edge Cases & AI Gotchas:**
+* **Missing Selection Styling & Click Width:** Does not handle the `selected` prop and omits `interactionWidth`. Selecting a 2px dashed wire (`strokeDasharray: '6, 6'`) on a busy canvas often fails because clicks between dashes register to the canvas background instead.
+
+
+* **Theme Blindness:** Ignores `data.colorTheme` and hardcodes `stroke: '#94a3b8'` directly in its style object. Dynamic color changes (such as indicating error states with rose or success with emerald) are ignored.
+
+
+* **Broken Line Animation:** Applying `animate-pulse` to a dashed line periodically renders the stroke nearly invisible against dark canvas backgrounds without providing directional flow indication.
+
+
+
+
+
+---
+
+### 4. StraightEdge.jsx
+
+**StraightEdge** is a direct point-to-point line connector with low rendering overhead, automated closed markers, and basic upstream activity detection.
+
+* **Requirements:**
+* **Framework Context:** Requires `@xyflow/react` (`BaseEdge`, `getStraightPath`, `MarkerType`, `useInternalNode`).
+
+
+* **Minimal Props:** Requires `source`, `sourceX`, `sourceY`, `targetX`, `targetY`, `markerEnd`, and `data`.
+
+
+
+
+* **Edge Cases & AI Gotchas:**
+* **Total Absence of Labels:** Unlike all three orthogonal edges, `StraightEdge` lacks `EdgeLabelRenderer` and completely ignores the `label` prop. Passing cardinality or connection labels to a straight edge will fail silently.
+
+
+* **Canvas Element Bisection:** Because it calculates direct Euclidean geometry, straight lines slice directly across intermediate nodes, containers, and badges placed between the source and target handles.
+
+
+* **Hardcoded Stroke Palette:** Uses a hardcoded `#cbd5e1` stroke, ignoring custom palette tokens and `data.colorTheme`.
+
+
+
+
+
+---
+
+### Combined Architecture: System Integration Dynamics
+
+When deploying these 5 nodes (`InteractiveNode`, `ShapeNode`, `IconNode`, `TableNode`, `ContainerNode`, `TextNode`) and 4 edges (`KineticEdge`, `OrthogonalEdge`, `RelationalEdge`, `StraightEdge`) together as a unified system, several cross-cutting compatibility traps occur:
+
+```
+[InteractiveNode] --(outputValues.out)--> [Downstream Node]
+        │
+        └── (Top-level value/isActive NOT set on Toggle/Gate)
+                    │
+                    ▼
+          [Smart Sensor in Edges] ---> Fails to trigger animation!
+
+```
+
+#### 1. Handle ID Inconsistency
+
+* **Dual-Direction Refactored Nodes (`ShapeNode`, `TableNode`, `ContainerNode`):** Use explicit, unique handle IDs: `top-target`, `top-source`, `bottom-target`, `bottom-source`, `left-target`, `left-source`, `right-target`, `right-source`.
+
+
+* **Strict Logic Node (`InteractiveNode`):** Uses strictly named directional IDs: `left`, `left-2`, and `right`.
+
+
+* **Legacy Nodes (`IconNode`, `TextNode`):** Contain duplicate IDs for both source and target handles (`id="top"`, `id="bottom"`, etc.).
+
+
+* **AI Action Item:** Never connect edges using a generic handle ID like `sourceHandle: "top"` across all nodes. An edge connecting from a `TableNode` to an `InteractiveNode` **must** specify `sourceHandle: "right-source"` (or `*-source`) and `targetHandle: "left"` or `"left-2"`. Connecting to `"right"` on `TableNode` will fail because that handle ID no longer exists.
+
+
+
+#### 2. The Smart Sensor Activation Gap
+
+* All four edge components use this hook to trigger visual animation:
+
+
+```javascript
+const isSourceActive = sourceNode?.data?.value === true || sourceNode?.data?.isActive === true;
+
+```
+
+
+* However, `InteractiveNode` dispatches data like this:
+
+
+* **Toggle:** Saves to `data.defaultState` and `data.outputValues.out`, but **never** writes `data.value` or `data.isActive`.
+
+
+* **Gate:** Saves to `data.outputValues.out` with boolean pass states, but **never** sets `data.value` or `data.isActive`.
+
+
+* **Slider:** Sets `data.value`, but as a float/number (not a boolean `true`), meaning `=== true` evaluates to `false`.
+
+
+
+
+* **Impact:** The Smart Sensor on all edges will remain inactive when connected to `InteractiveNode` unless `InteractiveNode`'s dispatch logic explicitly sets `isActive: Boolean(rawVal)` at the top level of `data`.
+
+
+
+#### 3. State Desynchronization Across Custom Node Editors
+
+* `ShapeNode`, `TableNode`, and `ContainerNode` buffer input locally with `useState` and lack reactive `useEffect` props watchers.
+
+
+* `TextNode` does not call `updateNodeData` at all.
+
+
+* **Impact:** If an AI flow builder programmatically updates edge configurations, labels, or node text via React Flow's store (`setNodes`), nodes with uncommitted or buffered local states will not synchronize with the incoming data until unmounted and remounted.
+
+
+
+#### 4. Selection and Interaction Layering
+
+* `ContainerNode` renders full-bleed hitboxes along its perimeter.
+
+
+* `OrthogonalEdge` provides an expanded `interactionWidth={25}`, whereas `KineticEdge`, `RelationalEdge`, and `StraightEdge` rely on standard 2px click hitboxes.
+
+
+* **Impact:** When edges are routed across or inside a `ContainerNode`, clicking to select an edge without `interactionWidth` will frequently trigger selection or dragging on the parent `ContainerNode` instead.
+
+**MathEngine** is an expression parsing and evaluation utility that wraps `mathjs` to resolve mathematical assignments and boolean gate conditions by extracting variable identifiers and injecting zero-value fallbacks for missing scope variables.
+
+### Requirements
+
+* **Runtime Package Dependency:** Requires the `mathjs` npm package to provide the core `evaluate` function.
+
+
+* **Consumer Integration:** Directly consumed by `InteractiveNode.jsx` to power `controlType === 'math'` (`processFormula`) and `controlType === 'gate'` (`evaluateCondition`).
+
+
+* **Input Contracts:**
+* `processFormula(formulaString, scope)`: Expects a formula string (e.g., `"output = a + b"` or a raw expression like `"a + b"`) and an optional key-value scope object (`incomingJsonScope` or `globalMetrics`).
+
+
+* `evaluateCondition(conditionString, scope)`: Expects a conditional expression string (e.g., `"temperature > 100"`, `"status == true"`) and a scope object, returning a strict boolean.
+
+
+
+
+* **Scope Structure:** Scope must be a flat JavaScript object mapping variable names to numerical or boolean values (e.g., `{ x: 10, y: 25 }`).
+
+
+
+---
+
+### Edge Cases & AI Gotchas
+
+* **Built-in Function Shadowing & Scope Corruption:** `extractVariables` uses a regex (`/[a-zA-Z_][a-zA-Z0-9_]*/g`) to match variable names and only excludes a tiny list of built-ins: `['max', 'min', 'sum', 'abs', 'round', 'floor', 'ceil']`. If an AI or user writes standard math or trigonometric functions (e.g., `sin`, `cos`, `tan`, `sqrt`, `log`, `exp`, `pow`) or constants (`pi`, `e`), `extractVariables` treats them as missing variables and injects `0` into `safeScope`. When `mathjs.evaluate` runs, it tries to invoke `0(x)` or references `0`, triggering an immediate evaluation error and returning an empty result `{}`.
+
+
+* **Logical Keyword Collision in Gates:** `extractVariables` does not filter out `mathjs` logical operators like `and`, `or`, `not`, or boolean literals `true` and `false`. Passing a condition like `"flowRate > 10 and status == true"` causes `and`, `status`, and `true` to be matched as variables. `buildSafeScope` sets `safeScope['and'] = 0` and `safeScope['true'] = 0`, corrupting the logical syntax and forcing `evaluateCondition` to fail and return `false`.
+
+
+* **LHS Target Variable Zero-Injection:** `extractVariables` inspects the entire `formulaString` before separating target variable assignment. For a formula like `"speed = distance / time"`, `speed` is extracted alongside `distance` and `time`. If `speed` is undefined in `scope`, `safeScope['speed'] = 0` is injected into the scope. While harmless in simple one-way calculations, if a formula relies on an accumulator or recursive expression (e.g., `"count = count + 1"`), it will overwrite previous state and always evaluate to `0 + 1 = 1`.
+
+
+* **Naive Assignment Split on Comparison Operators:** `processFormula` splits by `=` (`if (formulaString.includes('=')) { parts = formulaString.split('='); }`). If a formula uses comparison operators (e.g., `result = a == b` or ternary logic `result = (x >= 5 ? 1 : 0)`), splitting on the first `=` breaks the expression string or corrupts operator semantics.
+
+
+* **Division-by-Zero via Injected Defaults:** Because missing inputs automatically default to `0`, formulas involving division (e.g., `"ratio = total / count"`) where upstream nodes are disconnected will calculate `total / 0`. In `mathjs`, division by zero evaluates to `Infinity`. This `Infinity` value flows into `InteractiveNode.jsx`, which attempts to serialize it into `outputValues.out` and render it via `.toFixed(2)` on hover, propagating non-finite numerical errors downstream.
+
+
+* **Silent Error Swallowing:** All evaluation errors are caught via `try...catch` and logged exclusively via `console.warn`, returning `{}` for formulas and `false` for conditions. In `InteractiveNode`, an empty result defaults the node's output to `0` without notifying the UI or the user that a syntax error, unknown function, or parsing failure occurred.
+
+
+* **Smart Sensor Disconnect with Flow Edges:** When `InteractiveNode` processes a gate or formula through `MathEngine`, it stores the computed result inside `data.outputValues.out = { [nodeVarName]: rawVal }`. However, your edge wires (`KineticEdge`, `OrthogonalEdge`, `RelationalEdge`, `StraightEdge`) check `sourceNode.data.value === true || sourceNode.data.isActive === true`. Because `InteractiveNode` does not write the evaluated gate or math result to `data.value` or `data.isActive`, animated flow wires plugged into `MathEngine`-driven nodes will remain completely inactive.
+
+**CanvasWorkspace** serves as the primary canvas orchestration and layout controller, binding React Flow graph rendering, Zustand state persistence, keyboard shortcuts, drag-and-drop node placement, and floating inspector panels into a unified workspace interface.
+
+### Requirements
+
+* **Routing & Context Providers:**
+* Requires `useParams` from `react-router-dom` to extract `workspaceId`.
+
+
+* Requires `@xyflow/react` provider setup (`ReactFlowProvider`) and core canvas primitives (`ReactFlow`, `Background`, `Controls`, `MiniMap`, `ConnectionMode`, `MarkerType`, `useReactFlow`, and stylesheet `@xyflow/react/dist/style.css`).
+
+
+
+
+* **State Store & Custom Hooks:**
+* Depends on `useCanvasStore` providing graph state and history actions: `nodes`, `edges`, `onNodesChange`, `onEdgesChange`, `onConnect`, `addNode`, `deleteSelectedElements`, `undo`, `redo`, `takeSnapshot`, and `isFetching`.
+
+
+* Depends on `useCanvasActions` exposing `fetchCanvas(workspaceId)` for backend persistence.
+
+
+
+
+* **Component Registry Dependencies:**
+* Canvas configuration mappings: `customNodeTypes` and `customEdgeTypes`.
+
+
+* Floating panels and modals: `SkeletonLoader`, `ActionToolbar`, `CanvasHeader`, `AiPromptModal`, `VersionSidebar`, `NodeInspector`, and `ArsenalPanel`.
+
+
+
+
+* **Tailwind CSS Design Tokens:**
+* Relies on custom theme tokens including `bg-moon-950`, `bg-moon-900`, `border-moon-800`, and standard Slate palette values.
+
+
+
+
+
+---
+
+### Edge Cases & AI Gotchas
+
+* **Double-Click Conflict (Inline Text vs. Inspector Panel):** `CanvasContent` binds `onNodeDoubleClick={handleNodeDoubleClick}` to open the floating `NodeInspector`. However, `ShapeNode`, `TableNode`, and `ContainerNode` also bind `onDoubleClick` directly to activate their inline `<textarea>` or `<input>` editors. When a user double-clicks any of these nodes to edit text, both the inline editor and the `NodeInspector` sidebar open simultaneously, causing UI clutter and conflicting focus states.
+
+
+* **Hardcoded Edge Type Override:** The `handleNewConnection` callback intercepts all new wire drags and forces `type: 'edge_orthogonal'` with a hardcoded Slate `#94a3b8` closed arrowhead. Even if an edge connects two database tables (which should semantically use `RelationalEdge`) or links dynamic boolean logic (which uses `KineticEdge`), manual connections will always instantiate as `OrthogonalEdge` unless programmatically rewritten by an AI assistant or inspector dropdown.
+
+
+* **Strict Connection Routing Failures:** The canvas enforces `connectionMode={ConnectionMode.Strict}`. In this mode, React Flow strictly forbids connecting source-to-source or target-to-target handles. While `ShapeNode`, `TableNode`, and `ContainerNode` define explicit `-target` and `-source` handles, `IconNode` and `TextNode` define identical handle IDs for both targets and sources (`id="top"`, `id="bottom"`, etc.). Under `ConnectionMode.Strict`, dropping a wire onto an `IconNode` or `TextNode` triggers ambiguity or snapping errors due to duplicate IDs.
+
+
+* **Stale State in `NodeInspector`:** When double-clicking a node, `setActiveNode(node)` stores a snapshot of the node in local state. If that node’s data is subsequently mutated by background formula evaluations in `InteractiveNode`, by inline editing, or by an AI tool via the global Zustand store, `activeNode` does not update reactively. It holds stale snapshot data until the user closes and reopens the inspector.
+
+
+* **Undo/Redo History Bypasses on Node Edits:** `takeSnapshot()` is called when dropping a node, adding from the panel, making a connection, and dragging a node (`onNodeDragStart`). However, node-internal updates—such as changing slider values in `InteractiveNode`, typing in `ShapeNode` or `ContainerNode`, and adding/deleting rows in `TableNode`—call `updateNodeData` directly without invoking `takeSnapshot()`. Consequently, inline textual and schema changes cannot be undone using `Ctrl+Z` / `Cmd+Z`.
+
+
+* **Accidental Element Deletion on Defocused Inputs:** The keyboard shortcut listener protects `INPUT`, `TEXTAREA`, `SELECT`, and `isContentEditable` elements. However, if a user finishes typing inside a node and clicks away into the canvas pane, or clicks a button inside `NodeInspector` or `TableNode` without retaining input focus, pressing `Backspace` or `Delete` immediately calls `deleteSelectedElements()`, wiping the selected graph nodes without a confirmation prompt.
+
+
+* **Silent Failure on Dropped Data:** In `handleDrop`, `JSON.parse` is wrapped in a defensive `try...catch` that falls back to `{}` if parsing fails. If external drop data contains malformed JSON or an unregistered `nodeType`, the node is either added with empty default data or will crash React Flow with an "unregistered node type" runtime error.
+
+
+* **Infinite Skeleton Lockout on Fetch Errors:** `CanvasWorkspace` uses `lastWorkspaceId` ref to prevent repeated fetch calls, rendering `<SkeletonLoader type="canvas"/>` whenever `isFetching` is true. If `fetchCanvas` encounters an unhandled network error or server failure without flipping `isFetching` back to `false`, the workspace becomes permanently stuck on the loading skeleton screen.
+
+
+
+**STRICT AI BANNED ACTIONS (The "Do Not Touch" List)**
+
+
+* **Never update text or schema data globally without a remount:** Do not use `setNodes` to push new `data.label`, `data.title`, or `data.rows` to `ShapeNode`, `TableNode`, or `ContainerNode`. These components buffer state locally via `useState` without a `useEffect` watcher; AI-driven updates will trap stale data in the UI until the user remounts the node.
+
+
+* **Never assign math/logic keywords blindly to `MathEngine`:** Do not generate formulas containing built-in math functions (`sin`, `cos`) or logical keywords (`and`, `or`, `true`). The engine's regex treats these as missing variables, injecting `0` into the `safeScope`, which instantly corrupts the logic and causes silent evaluation failures.
+
+
+* **Never promise animated flows from `InteractiveNode` outputs:** Do not connect an `InteractiveNode` to a `KineticEdge` or `OrthogonalEdge` expecting animation. The edges listen for `sourceNode.data.value === true` or `data.isActive`, but `InteractiveNode` buries its evaluated gate and math results inside `data.outputValues.out`, leaving the wire's smart sensor dead.
+
+
+* **Never use `data.label` for `TextNode`:** If dynamically generating a text node, exclusively bind the content to `data.text`. Using the standard `data.label` schema will cause the node to silently ignore the payload and default to "Type something...".
+
+
+
+**SYSTEM-BREAKING EDGE CASES (What the AI Must Predict and Avoid)**
+
+* **The Infinite Render Loop:** If the AI suggests or auto-generates a circular connection (Node A -> Node B -> Node A), the continuous debounced recalculations through `useNodesData` will trigger an infinite React render cycle, dropping canvas performance to zero.
+
+
+* **Silent Payload Overwrites:** Because `incomingJsonScope` merges upstream data using `Object.assign`, if the AI routes two different nodes that both output the key `'out'` into a single target, the last processed node will silently overwrite the first with no handle-specific mapping.
+
+
+* **The Division-by-Zero Tooltip Crash:** If the AI constructs a division formula (e.g., `ratio = total / count`) and the user has not yet connected the inputs, `MathEngine` injects `0` for the missing variables. This produces an `Infinity` result that flows to the `InteractiveNode` right-handle tooltip, crashing the `.toFixed(2)` renderer.
+
+
+* **Data Loss on Defocused Deletion:** If the AI directs a user to type inside a `TableNode` or `NodeInspector` and the user clicks the canvas background without retaining input focus, hitting `Backspace` or `Delete` will immediately trigger `deleteSelectedElements()`, wiping out the node entirely without a confirmation prompt.
+
+
+* **The Undo/Redo Blindspot:** The AI must recognize that `takeSnapshot()` is bypassed during inline text edits, slider movements, and table row updates. If the user makes a mistake inside a `TableNode` and hits `Ctrl+Z`, their schema changes will not revert.
+
+
+
+**ENTREPRENEURIAL INSIGHTS & STRATEGIC LEVERAGE**
+
+Applying lateral thinking to this architecture reveals that the root problem isn't the individual bugs—it is a fractured source of truth. Your React Flow global state and your local component states are fighting each other. From a business perspective, silent failures (like the `MathEngine` swallowing syntax errors and returning `0`, or the canvas permanently locking on `<SkeletonLoader/>` during a fetch error) are user-retention killers. Users will accept a tool that explicitly tells them they made an error, but they will immediately churn if their data silently vanishes or calculates incorrectly.
+
+To apply Right Effort here, stop patching individual local state buffers. The highest ROI engineering move is to strip `useState` out of `ShapeNode`, `TableNode`, and `ContainerNode`. Force all keystrokes and row updates to dispatch directly to the React Flow global store via `updateNodeData`, debouncing the input if necessary for performance. This single architectural shift instantly solves your AI desynchronization, fixes the broken `Ctrl+Z` history, and ensures that when the AI touches the canvas, the UI actually updates.
