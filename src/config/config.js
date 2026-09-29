@@ -4,4 +4,5 @@ const conf = {
   tinymceApiKey: import.meta.env.VITE_TINYMCE_API_KEY,
 };
 
+
 export default conf;

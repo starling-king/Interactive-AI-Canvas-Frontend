@@ -607,3 +607,18 @@ const isSourceActive = sourceNode?.data?.value === true || sourceNode?.data?.isA
 Applying lateral thinking to this architecture reveals that the root problem isn't the individual bugs—it is a fractured source of truth. Your React Flow global state and your local component states are fighting each other. From a business perspective, silent failures (like the `MathEngine` swallowing syntax errors and returning `0`, or the canvas permanently locking on `<SkeletonLoader/>` during a fetch error) are user-retention killers. Users will accept a tool that explicitly tells them they made an error, but they will immediately churn if their data silently vanishes or calculates incorrectly.
 
 To apply Right Effort here, stop patching individual local state buffers. The highest ROI engineering move is to strip `useState` out of `ShapeNode`, `TableNode`, and `ContainerNode`. Force all keystrokes and row updates to dispatch directly to the React Flow global store via `updateNodeData`, debouncing the input if necessary for performance. This single architectural shift instantly solves your AI desynchronization, fixes the broken `Ctrl+Z` history, and ensures that when the AI touches the canvas, the UI actually updates.
+
+
+
+
+
+
+
+
+
+
+
+
+explain me the concept of how heap memory work in the actual machine which used in the programming languages in simple way 
+
+like how it store in the memory, pros and corns, data flow and storage like this 
