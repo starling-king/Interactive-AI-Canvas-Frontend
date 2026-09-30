@@ -11,6 +11,7 @@ import AdminAuthLayout from "./pages/AdminAuthLayout.jsx";
 import Admin from "./pages/Admin.jsx";
 import ProfileSettings from "./pages/ProfileSettings.jsx";
 import CanvasWorkspace from "./pages/CanvasWorkspace.jsx";
+import Documentation from "./pages/Documentation.jsx";
 
 const router = createBrowserRouter([
   // --- PUBLIC ROUTES ---
@@ -19,6 +20,7 @@ const router = createBrowserRouter([
     element: <App />, // Wraps with Header/Footer
     children: [
       { index: true, element: <Home /> },
+      { path: "docs", element: <Documentation /> },
       { path: "login", element: <Login /> },
       { path: "signin", element: <Signin /> },
     ],

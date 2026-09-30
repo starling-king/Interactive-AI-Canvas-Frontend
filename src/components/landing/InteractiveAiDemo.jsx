@@ -46,33 +46,66 @@ import { customNodeTypes, customEdgeTypes } from "../index.js";
 //     { id: "e3", source: "gate", target: "db", type: "edge_kinetic", animated: true, label: "True" }
 // ];
 
-// 1. HARDCODED DEMO DATA 
+// 1. HARDCODED DEMO DATA
 const demoNodes = [
+    {
+        id: "user",
+        type: "node_icon",
+        position: { x: 50, y: 150 },
+        data: { iconType: "default", label: "USER INPUT", animationStyle: "pulse" }
+    },
     {
         id: "slider-1",
         type: "node_interactive",
-        position: { x: 100, y: 150 },
+        position: { x: 300, y: 140 },
         data: { controlType: "slider", label: "Subtotal", metricKey: "demo_subtotal", value: 5500, min: 100, max: 15000, isGlobal: false }
     },
     {
         id: "gate-1",
         type: "node_interactive",
-        position: { x: 450, y: 150 },
+        position: { x: 620, y: 150 },
         data: { controlType: "gate", label: "High Value Check", condition: "demo_subtotal > 5000", isGlobal: false }
     },
     {
         id: "db-1",
         type: "node_table",
-        position: { x: 750, y: 100 },
+        position: { x: 920, y: 100 },
         data: { title: "Orders_DB", rows: [{ name: "order_id", type: "string pk" }, { name: "total", type: "integer" }] }
     }
 ];
 
+// 2. PRECISION EDGE ROUTING
+// 2. PRECISION EDGE ROUTING
 const demoEdges = [
-    { id: "e1", source: "slider-1", target: "gate-1", type: "edge_orthogonal", animated: true },
-    { id: "e2", source: "gate-1", target: "db-1", type: "edge_kinetic", animated: true, label: "TRUE" }
+    {
+        id: "e1",
+        source: "user",
+        target: "slider-1",
+        sourceHandle: "right-source",
+        targetHandle: "left-target",  // Now perfectly matches InteractiveNode
+        type: "edge_orthogonal",
+        animated: true
+    },
+    {
+        id: "e2",
+        source: "slider-1",
+        target: "gate-1",
+        sourceHandle: "right-source", // Now perfectly matches InteractiveNode
+        targetHandle: "left-target",
+        type: "edge_orthogonal",
+        animated: true
+    },
+    {
+        id: "e3",
+        source: "gate-1",
+        target: "db-1",
+        sourceHandle: "right-source", // Now perfectly matches InteractiveNode
+        targetHandle: "left-target",  // Perfectly matches TableNode
+        type: "edge_kinetic",
+        animated: true,
+        label: "TRUE"
+    }
 ];
-
 export default function InteractiveAiDemo() {
     return (
         <div className="relative w-full h-[500px] sm:h-[600px] glass-panel rounded-3xl overflow-hidden shadow-2xl gpu-layer group">

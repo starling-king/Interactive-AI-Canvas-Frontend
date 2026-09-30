@@ -34,24 +34,6 @@ export default function ContainerNode({ id, data, selected, isConnectable }) {
                 <div className={`absolute inset-0 border-2 border-dashed rounded-xl pointer-events-none transition-colors ${selected ? 'border-blue-500/60 bg-blue-500/5' : 'border-slate-600/40 bg-slate-900/20 group-hover:border-slate-500/60'
                     }`} />
 
-                {/* 
-                  LAYER 2: THE INVISIBLE ROUTING HANDLES 
-                  These sit exactly on the edges of the box, allowing the AI to connect arrows from any side.
-                */}
-                {/* <Handle type="target" position={Position.Top} id="top" isConnectable={isConnectable} className="opacity-0 w-full h-3 bg-transparent rounded-none border-none z-20" />
-                <Handle type="source" position={Position.Top} id="top" isConnectable={isConnectable} className="opacity-0 w-full h-3 bg-transparent rounded-none border-none z-20" />
-
-                <Handle type="target" position={Position.Bottom} id="bottom" isConnectable={isConnectable} className="opacity-0 w-full h-3 bg-transparent rounded-none border-none z-20" />
-                <Handle type="source" position={Position.Bottom} id="bottom" isConnectable={isConnectable} className="opacity-0 w-full h-3 bg-transparent rounded-none border-none z-20" />
-
-                <Handle type="target" position={Position.Left} id="left" isConnectable={isConnectable} className="opacity-0 w-3 h-full bg-transparent rounded-none border-none z-20" />
-                <Handle type="source" position={Position.Left} id="left" isConnectable={isConnectable} className="opacity-0 w-3 h-full bg-transparent rounded-none border-none z-20" />
-
-                <Handle type="target" position={Position.Right} id="right" isConnectable={isConnectable} className="opacity-0 w-3 h-full bg-transparent rounded-none border-none z-20" />
-                <Handle type="source" position={Position.Right} id="right" isConnectable={isConnectable} className="opacity-0 w-3 h-full bg-transparent rounded-none border-none z-20" /> */}
-
-                {/* LAYER 2: The Interaction Layer (Handles & Text) */}
-                {/* Target Handles (Entrances) */}
                 <Handle type="target" position={Position.Top} id="top-target" isConnectable={isConnectable} className="opacity-0 group-hover:opacity-100 w-full h-3 bg-blue-500/50 rounded-none border-none transition-opacity z-20" />
                 <Handle type="target" position={Position.Bottom} id="bottom-target" isConnectable={isConnectable} className="opacity-0 group-hover:opacity-100 w-full h-3 bg-blue-500/50 rounded-none border-none transition-opacity z-20" />
                 <Handle type="target" position={Position.Left} id="left-target" isConnectable={isConnectable} className="opacity-0 group-hover:opacity-100 w-3 h-full bg-blue-500/50 rounded-none border-none transition-opacity z-20" />

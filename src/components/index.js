@@ -88,6 +88,7 @@ import ServerWakeupBanner from "./ServerWakeupBanner.jsx";
 import AiPromptModal from "./AiPromptModal.jsx";
 import InteractiveAiDemo from "./landing/InteractiveAiDemo.jsx";
 import WorkspaceCard from "./dashboard/WorkspaceCard.jsx";
+import Documentation from "../pages/Documentation.jsx";
 
 // --- 3. Layout Components ---
 import Container from "./container/Container.jsx";
@@ -157,6 +158,7 @@ export {
   VersionSidebar,
   NodeInspector,
   ArsenalPanel,
+  Documentation,
   // LogoutBtn,
   Footer,
   ShapeNode,
