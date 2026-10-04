@@ -1,116 +1,98 @@
-import React from "react";
+// import React, { useEffect,useMemo } from "react";
+// import { ReactFlow, Background } from "@xyflow/react";
+// import "@xyflow/react/dist/style.css";
+
+// // Import your global passive types, but we will selectively override the active ones
+// import { customNodeTypes, customEdgeTypes } from "../index.js";
+// import DemoInteractiveNode from "./DemoInteractiveNode.jsx";
+// import { useDemoStore } from "../../store/demoStore.js"; // Connect to the isolated brain
+
+// // 1. ISOLATED DEMO DICTIONARY (The Gatekeeper)
+// // Inherit safe nodes (like icons), but inject our lightweight demo node for interactivity
+// const demoNodeTypes = useMemo({
+//     ...customNodeTypes,
+//     node_interactive: DemoInteractiveNode,
+// },[]);
+
+// export default function InteractiveAiDemo() {
+//     // 2. CONNECT TO THE ZUSTAND DEMO STORE
+//     const { nodes, edges, onNodesChange, onEdgesChange, resetDemoStore } = useDemoStore();
+
+//     // 3. MEMORY MANAGEMENT
+//     // Clean up the demo state if the user navigates to the sign-in page, keeping the browser fast
+//     useEffect(() => {
+//         return () => resetDemoStore();
+//     }, [resetDemoStore]);
+
+//     return (
+//         <div className="relative w-full h-[500px] sm:h-[600px] glass-panel rounded-3xl overflow-hidden shadow-2xl gpu-layer group border border-moon-800">
+
+//             {/* 4. LIVE STATUS BADGE */}
+//             <div className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-moon-900/80 backdrop-blur-md border border-moon-800 rounded-full shadow-lg flex items-center gap-2">
+//                 <span className="w-2 h-2 rounded-full bg-electric animate-pulse shadow-[0_0_10px_var(--color-electric-glow)]" />
+//                 <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+//                     Live Engine Rendering
+//                 </span>
+//             </div>
+
+//             {/* 5. THE REACT FLOW ENGINE */}
+//             <ReactFlow
+//                 nodes={nodes}
+//                 edges={edges}
+//                 onNodesChange={onNodesChange} // Allows local UI tracking
+//                 onEdgesChange={onEdgesChange}
+//                 nodeTypes={demoNodeTypes}
+//                 edgeTypes={customEdgeTypes}
+//                 fitView
+//                 fitViewOptions={{ padding: 0.15 }}
+//                 proOptions={{ hideAttribution: true }}
+
+//                 // DEMO LOCKS: Prevent destruction of the cinematic layout
+//                 nodesDraggable={false}
+//                 nodesConnectable={false}
+//                 elementsSelectable={true} // Must be true so users can drag the slider
+//                 zoomOnScroll={false}
+//                 panOnDrag={false}
+//                 preventScrolling={false}
+//                 className="touch-none"
+//             >
+//                 <Background color="#1e293b" gap={24} size={2} />
+//             </ReactFlow>
+
+//             {/* LATERAL OVERLAY: Blends the strict edges into the dark theme */}
+//             <div className="absolute inset-0 pointer-events-none rounded-3xl ring-1 ring-inset ring-moon-800/50 shadow-[inset_0_0_40px_rgba(2,6,23,0.8)]" />
+//         </div>
+//     );
+// }
+
+
+import React, { useEffect, useMemo } from "react";
 import { ReactFlow, Background } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-// Import your exact drawing engine dictionaries (Single Source of Truth)
+// Import your global passive types
 import { customNodeTypes, customEdgeTypes } from "../index.js";
+import DemoInteractiveNode from "./DemoInteractiveNode.jsx";
+import { useDemoStore } from "../../store/demoStore.js";
 
-// 1. HARDCODED DEMO DATA
-// This simulates exactly what your Gemini backend returns.
-// const demoNodes = [
-//     {
-//         id: "cloud",
-//         type: "node_container",
-//         position: { x: 0, y: 0 },
-//         data: { label: "AWS Pipeline (Demo)", width: 850, height: 400 }
-//     },
-//     {
-//         id: "user",
-//         type: "node_icon",
-//         position: { x: 50, y: 160 },
-//         data: { iconType: "default" }
-//     },
-//     {
-//         id: "math",
-//         type: "node_interactive",
-//         position: { x: 220, y: 140 },
-//         data: { controlType: "math", formulas: ["tax = subtotal * 0.08", "total = subtotal + tax"] }
-//     },
-//     {
-//         id: "gate",
-//         type: "node_interactive",
-//         position: { x: 480, y: 150 },
-//         data: { controlType: "gate", condition: "total > 5000" }
-//     },
-//     {
-//         id: "db",
-//         type: "node_table",
-//         position: { x: 730, y: 100 },
-//         data: { title: "Orders_DB", rows: [{ name: "order_id", type: "string pk" }, { name: "total", type: "integer" }] }
-//     }
-// ];
-
-// const demoEdges = [
-//     { id: "e1", source: "user", target: "math", type: "edge_orthogonal", animated: true },
-//     { id: "e2", source: "math", target: "gate", type: "edge_orthogonal", animated: true },
-//     { id: "e3", source: "gate", target: "db", type: "edge_kinetic", animated: true, label: "True" }
-// ];
-
-// 1. HARDCODED DEMO DATA
-const demoNodes = [
-    {
-        id: "user",
-        type: "node_icon",
-        position: { x: 50, y: 150 },
-        data: { iconType: "default", label: "USER INPUT", animationStyle: "pulse" }
-    },
-    {
-        id: "slider-1",
-        type: "node_interactive",
-        position: { x: 300, y: 140 },
-        data: { controlType: "slider", label: "Subtotal", metricKey: "demo_subtotal", value: 5500, min: 100, max: 15000, isGlobal: false }
-    },
-    {
-        id: "gate-1",
-        type: "node_interactive",
-        position: { x: 620, y: 150 },
-        data: { controlType: "gate", label: "High Value Check", condition: "demo_subtotal > 5000", isGlobal: false }
-    },
-    {
-        id: "db-1",
-        type: "node_table",
-        position: { x: 920, y: 100 },
-        data: { title: "Orders_DB", rows: [{ name: "order_id", type: "string pk" }, { name: "total", type: "integer" }] }
-    }
-];
-
-// 2. PRECISION EDGE ROUTING
-// 2. PRECISION EDGE ROUTING
-const demoEdges = [
-    {
-        id: "e1",
-        source: "user",
-        target: "slider-1",
-        sourceHandle: "right-source",
-        targetHandle: "left-target",  // Now perfectly matches InteractiveNode
-        type: "edge_orthogonal",
-        animated: true
-    },
-    {
-        id: "e2",
-        source: "slider-1",
-        target: "gate-1",
-        sourceHandle: "right-source", // Now perfectly matches InteractiveNode
-        targetHandle: "left-target",
-        type: "edge_orthogonal",
-        animated: true
-    },
-    {
-        id: "e3",
-        source: "gate-1",
-        target: "db-1",
-        sourceHandle: "right-source", // Now perfectly matches InteractiveNode
-        targetHandle: "left-target",  // Perfectly matches TableNode
-        type: "edge_kinetic",
-        animated: true,
-        label: "TRUE"
-    }
-];
 export default function InteractiveAiDemo() {
-    return (
-        <div className="relative w-full h-[500px] sm:h-[600px] glass-panel rounded-3xl overflow-hidden shadow-2xl gpu-layer group">
+    const { nodes, edges, onNodesChange, onEdgesChange, resetDemoStore } = useDemoStore();
 
-            {/* 2. LIVE STATUS BADGE: Adds cognitive ease and shows it's not a static image */}
+    // THE FIX: Wrap the dictionary in useMemo inside the component.
+    // This guarantees customNodeTypes is fully initialized before we try to spread it.
+    const demoNodeTypes = useMemo(() => ({
+        ...customNodeTypes,
+        node_interactive: DemoInteractiveNode,
+    }), []);
+
+    // Clean up the demo state if the user navigates away
+    useEffect(() => {
+        return () => resetDemoStore();
+    }, [resetDemoStore]);
+
+    return (
+        <div className="relative w-full h-[500px] sm:h-[600px] glass-panel rounded-3xl overflow-hidden shadow-2xl gpu-layer group border border-moon-800">
+
             <div className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-moon-900/80 backdrop-blur-md border border-moon-800 rounded-full shadow-lg flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-electric animate-pulse shadow-[0_0_10px_var(--color-electric-glow)]" />
                 <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
@@ -118,20 +100,21 @@ export default function InteractiveAiDemo() {
                 </span>
             </div>
 
-            {/* 3. THE READ-ONLY CANVAS */}
             <ReactFlow
-                nodes={demoNodes}
-                edges={demoEdges}
-                nodeTypes={customNodeTypes}
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                nodeTypes={demoNodeTypes}
                 edgeTypes={customEdgeTypes}
                 fitView
-                fitViewOptions={{ padding: 0.2 }}
-
+                fitViewOptions={{ padding: 0.15 }}
                 proOptions={{ hideAttribution: true }}
-                // Lock down interactions to make it act like a presentation video
+
+                // DEMO LOCKS
                 nodesDraggable={false}
                 nodesConnectable={false}
-                elementsSelectable={false}
+                elementsSelectable={true}
                 zoomOnScroll={false}
                 panOnDrag={false}
                 preventScrolling={false}
@@ -140,7 +123,6 @@ export default function InteractiveAiDemo() {
                 <Background color="#1e293b" gap={24} size={2} />
             </ReactFlow>
 
-            {/* 4. LATERAL THINKING OVERLAY: Fades the edges into your background */}
             <div className="absolute inset-0 pointer-events-none rounded-3xl ring-1 ring-inset ring-moon-800/50 shadow-[inset_0_0_40px_rgba(2,6,23,0.8)]" />
         </div>
     );
